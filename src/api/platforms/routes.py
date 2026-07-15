@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
+from src.core.dependencies import verify_api_key
 from src.core.database import get_db
 from src.schemas import dtos
 from . import service
@@ -9,6 +10,7 @@ from . import service
 router = APIRouter(
   prefix="/platforms",
   tags=["platforms"],
+  dependencies=[Depends(verify_api_key)],
 )
 
 
@@ -20,12 +22,12 @@ router = APIRouter(
   summary="Get all platforms",
   description="Returns a paginated list of platforms ordered by name.",
 )
-def get_platforms(
+async def get_platforms(
   page: int = 1,
   limit: int = 20,
-  db: Session = Depends(get_db),
+  db: AsyncSession = Depends(get_db),
 ):
-  return service.get_all(db, page, limit)
+  return await service.get_all(db, page, limit)
 
 
 # GET BY ID -------------------------------------------------------
@@ -36,8 +38,8 @@ def get_platforms(
   summary="Get platform by ID",
   description="Returns a platform by its ID. Raises 404 if not found.",
 )
-def get_platform_by_id(id: int, db: Session = Depends(get_db)):
-  platform = service.get_by_id(db, id)
+async def get_platform_by_id(id: int, db: AsyncSession = Depends(get_db)):
+  platform = await service.get_by_id(db, id)
 
   if not platform:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Platform not found")
@@ -53,8 +55,8 @@ def get_platform_by_id(id: int, db: Session = Depends(get_db)):
   summary="Create platform",
   description="Creates a new platform and returns it.",
 )
-def create_platform(data: dtos.PlatformsRequest, db: Session = Depends(get_db)):
-  return service.create(db, data)
+async def create_platform(data: dtos.PlatformsRequest, db: AsyncSession = Depends(get_db)):
+  return await service.create(db, data)
 
 
 # UPDATE ----------------------------------------------------------
@@ -65,8 +67,8 @@ def create_platform(data: dtos.PlatformsRequest, db: Session = Depends(get_db)):
   summary="Update platform",
   description="Updates a platform by its ID. Raises 404 if not found.",
 )
-def update_platform(id: int, data: dtos.PlatformsRequest, db: Session = Depends(get_db)):
-  platform = service.update(db, id, data)
+async def update_platform(id: int, data: dtos.PlatformsRequest, db: AsyncSession = Depends(get_db)):
+  platform = await service.update(db, id, data)
 
   if not platform:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Platform not found")
@@ -81,8 +83,8 @@ def update_platform(id: int, data: dtos.PlatformsRequest, db: Session = Depends(
   summary="Delete platform",
   description="Deletes a platform by its ID. Raises 404 if not found.",
 )
-def delete_platform(id: int, db: Session = Depends(get_db)):
-  deleted = service.delete(db, id)
+async def delete_platform(id: int, db: AsyncSession = Depends(get_db)):
+  deleted = await service.delete(db, id)
 
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Platform not found")

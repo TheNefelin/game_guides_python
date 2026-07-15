@@ -25,10 +25,14 @@ deactivate
 
 ### 2. Instalar dependencias
 ```sh
-pip install fastapi uvicorn[standard] sqlalchemy psycopg2-binary python-dotenv pydantic pydantic-settings
+python.exe -m pip install --upgrade pip
+```
+```sh
+pip install fastapi uvicorn[standard] sqlalchemy asyncpg greenlet python-dotenv pydantic pydantic-settings
 pip install google-auth google-auth-oauthlib google-auth-httplib2
 pip install pydantic[email]
 pip install python-jose[cryptography]
+pip install slowapi
 ```
 ### 3. (Opcional) Dependencias de test
 ```sh
@@ -105,7 +109,9 @@ src/
 ├── core/                        → Cross-cutting (transversal)
 │   ├── config.py                →   Pydantic settings (DATABASE_URL, SECRET_KEY, etc.)
 │   ├── database.py              →   SQLAlchemy engine, session, Base
-│   ├── exceptions.py            →   AppError, NotFoundError, DuplicateNameError
+│   ├── exceptions.py            →   AppError, NotFoundError, DuplicateNameError, InvalidApiKeyError
+│   ├── dependencies.py          →   verify_api_key (X-Api-Key header)
+│   ├── limiter.py               →   Rate limiter (slowapi)
 │   └── security.py              →   JWT create/verify, get_current_user, OAuth2 scheme
 ├── models/
 │   └── models.py                → SQLAlchemy entidades (User, Role, Platforms, Genre...)
@@ -134,8 +140,10 @@ src/
 - **Route** decide HTTP (200, 201, 204, 404)
 - **Service** orquesta y aplica reglas de negocio
 - **Repository** solo consultas SQLAlchemy
-- **Cross-cutting** en `core/` (config, security, exceptions)
+- **Cross-cutting** en `core/` (config, security, exceptions, limiter, dependencies)
 - **Errores**: `AppError` → middleware centralizado en `main.py`
+- **API Key**: `X-Api-Key` header requerido globalmente vía `verify_api_key` en `core/dependencies.py`
+- **Rate Limiting**: slowapi con default `100/minute` en todos los endpoints, `10/minute` en `/auth/google`, `/health` exento
 
 ---
 

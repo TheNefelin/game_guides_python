@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Request
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from src.core import database
+from src.core.limiter import limiter
 from . import schemas, service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -15,11 +16,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
   summary="Authenticate with Google",
   description="Validates Google token, gets/creates user and returns JWT.",
 )
-def auth_google(
+@limiter.limit("10/minute")
+async def auth_google(
+  request: Request,
   auth_data: schemas.AuthGoogleRequest,
-  db: Session = Depends(database.get_db)
+  db: AsyncSession = Depends(database.get_db)
 ):
-  return service.auth_service(db, auth_data.googleToken)
+  return await service.auth_service(db, auth_data.googleToken)
 
 
 @router.post(
@@ -29,11 +32,11 @@ def auth_google(
   summary="Refresh JWT token",
   description="Rotates refresh token and returns new JWT + new refresh token.",
 )
-def auth_refresh(
+async def auth_refresh(
   data: schemas.AuthRefreshRequest,
-  db: Session = Depends(database.get_db)
+  db: AsyncSession = Depends(database.get_db)
 ):
-  return service.refresh_session(db, data.refresh_token)
+  return await service.refresh_session(db, data.refresh_token)
 
 
 @router.post(
@@ -42,8 +45,8 @@ def auth_refresh(
   summary="Logout",
   description="Revokes the refresh token.",
 )
-def auth_logout(
+async def auth_logout(
   data: schemas.AuthRefreshRequest,
-  db: Session = Depends(database.get_db)
+  db: AsyncSession = Depends(database.get_db)
 ):
-  service.revoke_session(db, data.refresh_token)
+  await service.revoke_session(db, data.refresh_token)

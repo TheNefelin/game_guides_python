@@ -1,7 +1,7 @@
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.users import service as users_service
 from src.core import security
@@ -12,13 +12,13 @@ from . import schemas, google_service, session_repository
 REFRESH_TOKEN_DAYS = 7
 
 
-def auth_service(db: Session, google_token: str) -> schemas.AuthGoogleResponse:
+async def auth_service(db: AsyncSession, google_token: str) -> schemas.AuthGoogleResponse:
   google_user_info = google_service.verify_google_token(google_token)
 
   if not google_user_info.email_verified:
     raise UnauthorizedError(message="Email not verified")
 
-  user = users_service.get_or_create_user(db, google_user_info.email)
+  user = await users_service.get_or_create_user(db, google_user_info.email)
 
   token = security.create_access_token(
     user.id,
@@ -27,7 +27,7 @@ def auth_service(db: Session, google_token: str) -> schemas.AuthGoogleResponse:
 
   refresh_token = secrets.token_urlsafe(32)
   expires_at = datetime.now(tz=timezone.utc) + timedelta(days=REFRESH_TOKEN_DAYS)
-  session_repository.create(db, user.id, refresh_token, expires_at)
+  await session_repository.create(db, user.id, refresh_token, expires_at)
 
   auth_user = schemas.AuthGoogleUser (
     id_user = str(user.id),
@@ -44,26 +44,29 @@ def auth_service(db: Session, google_token: str) -> schemas.AuthGoogleResponse:
   )
 
 
-def refresh_session(db: Session, refresh_token: str) -> schemas.AuthRefreshResponse:
-  session = session_repository.get_by_token(db, refresh_token)
+async def refresh_session(db: AsyncSession, refresh_token: str) -> schemas.AuthRefreshResponse:
+  session = await session_repository.get_by_token(db, refresh_token)
 
   if not session or session.is_revoked or session.expires_at < datetime.now(tz=timezone.utc):
     raise UnauthorizedError("Invalid or expired refresh token")
 
-  session_repository.revoke(db, session)
+  user_id = session.user_id
+  role_name = session.user.role.name
+
+  await session_repository.revoke(db, session)
 
   new_refresh = secrets.token_urlsafe(32)
   expires_at = datetime.now(tz=timezone.utc) + timedelta(days=REFRESH_TOKEN_DAYS)
-  session_repository.create(db, session.user_id, new_refresh, expires_at)
+  await session_repository.create(db, user_id, new_refresh, expires_at)
 
-  token = security.create_access_token(session.user_id, session.user.role.name)
+  token = security.create_access_token(user_id, role_name)
   return schemas.AuthRefreshResponse(token=token, refresh_token=new_refresh)
 
 
-def revoke_session(db: Session, refresh_token: str) -> None:
-  session = session_repository.get_by_token(db, refresh_token)
+async def revoke_session(db: AsyncSession, refresh_token: str) -> None:
+  session = await session_repository.get_by_token(db, refresh_token)
 
   if not session:
     raise UnauthorizedError("Invalid refresh token")
 
-  session_repository.revoke(db, session)
+  await session_repository.revoke(db, session)

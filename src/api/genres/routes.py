@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from src.core.database import get_db
@@ -20,12 +20,12 @@ router = APIRouter(
   summary="Get all genres",
   description="Returns a paginated list of genres ordered by name.",
 )
-def get_all_genres(
+async def get_all_genres(
   page: int = 1,
   limit: int = 20,
-  db: Session = Depends(get_db),
+  db: AsyncSession = Depends(get_db),
 ):
-  return service.get_all(db, page, limit)
+  return await service.get_all(db, page, limit)
 
 
 # GET BY ID -------------------------------------------------------
@@ -36,8 +36,8 @@ def get_all_genres(
   summary="Get genre by ID",
   description="Returns a genre by its ID. Raises 404 if not found.",
 )
-def get_genre_by_id(id: int, db: Session = Depends(get_db)):
-  genre = service.get_by_id(db, id)
+async def get_genre_by_id(id: int, db: AsyncSession = Depends(get_db)):
+  genre = await service.get_by_id(db, id)
 
   if not genre:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Genre not found")
@@ -53,8 +53,8 @@ def get_genre_by_id(id: int, db: Session = Depends(get_db)):
   summary="Create genre",
   description="Creates a new genre and returns it.",
 )
-def create_genre(data: dtos.GenreRequest, db: Session = Depends(get_db)):
-  return service.create(db, data)
+async def create_genre(data: dtos.GenreRequest, db: AsyncSession = Depends(get_db)):
+  return await service.create(db, data)
 
 
 # UPDATE ----------------------------------------------------------
@@ -65,12 +65,12 @@ def create_genre(data: dtos.GenreRequest, db: Session = Depends(get_db)):
   summary="Update genre",
   description="Updates a genre by its ID. Raises 404 if not found.",
 )
-def update_genre(
-  id: int, 
-  data: dtos.GenreRequest, 
-  db: Session = Depends(get_db)
+async def update_genre(
+  id: int,
+  data: dtos.GenreRequest,
+  db: AsyncSession = Depends(get_db)
 ):
-  genre = service.update(db, id, data)
+  genre = await service.update(db, id, data)
 
   if not genre:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Genre not found")
@@ -85,11 +85,11 @@ def update_genre(
   summary="Delete genre",
   description="Deletes a genre by its ID. Raises 404 if not found.",
 )
-def delete_genre(
-  id: int, 
-  db: Session = Depends(get_db)
+async def delete_genre(
+  id: int,
+  db: AsyncSession = Depends(get_db)
 ):
-  deleted = service.delete(db, id)
+  deleted = await service.delete(db, id)
 
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Genre not found")

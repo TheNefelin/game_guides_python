@@ -1,60 +1,59 @@
-from sqlalchemy import select, exists
-from sqlalchemy.orm import Session
+from sqlalchemy import select, exists, func
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import models
 
 
 # COUNT ----------------------------------------------------------
-def count(db: Session) -> int:
-  return db.query(models.Genre).count()
+async def count(db: AsyncSession) -> int:
+  result = await db.execute(select(func.count(models.Genre.id)))
+  return result.scalar_one()
 
 
 # GET ALL --------------------------------------------------------
-def get_all(db: Session, page: int = 1, limit: int = 20) -> list[models.Genre]:
+async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> list[models.Genre]:
   offset = (page - 1) * limit
-  return (
-    db.query(models.Genre)
+  result = await db.execute(
+    select(models.Genre)
     .order_by(models.Genre.name)
     .offset(offset)
     .limit(limit)
-    .all()
   )
+  return list(result.scalars().all())
 
 
 # EXISTS BY NAME --------------------------------------------------
-def exists_by_name(db: Session, name: str) -> bool:
+async def exists_by_name(db: AsyncSession, name: str) -> bool:
   stmt = select(exists().where(models.Genre.name == name))
-  return db.scalar(stmt)
+  result = await db.execute(stmt)
+  return result.scalar_one()
 
 
 # GET BY ID -------------------------------------------------------
-def get_by_id(db: Session, id: int) -> models.Genre | None:
-  return (
-    db.query(models.Genre)
-    .filter(models.Genre.id == id)
-    .first()
-  )
+async def get_by_id(db: AsyncSession, id: int) -> models.Genre | None:
+  result = await db.execute(select(models.Genre).where(models.Genre.id == id))
+  return result.scalar_one_or_none()
 
 
 # CREATE ----------------------------------------------------------
-def create(db: Session, data: dict) -> models.Genre:
+async def create(db: AsyncSession, data: dict) -> models.Genre:
   item = models.Genre(**data)
   db.add(item)
-  db.commit()
-  db.refresh(item)
+  await db.commit()
+  await db.refresh(item)
   return item
 
 
 # UPDATE ----------------------------------------------------------
-def update(db: Session, item: models.Genre, data: dict) -> models.Genre:
+async def update(db: AsyncSession, item: models.Genre, data: dict) -> models.Genre:
   for key, value in data.items():
     setattr(item, key, value)
-  db.commit()
-  db.refresh(item)
+  await db.commit()
+  await db.refresh(item)
   return item
 
 
 # DELETE ----------------------------------------------------------
-def delete(db: Session, item: models.Genre) -> None:
-  db.delete(item)
-  db.commit()
+async def delete(db: AsyncSession, item: models.Genre) -> None:
+  await db.delete(item)
+  await db.commit()

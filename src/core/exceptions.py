@@ -25,3 +25,8 @@ class UnauthorizedError(AppError):
 class ForbiddenError(AppError):
   def __init__(self, message: str = "Insufficient permissions"):
     super().__init__(message, status.HTTP_403_FORBIDDEN)
+
+
+class InvalidApiKeyError(AppError):
+  def __init__(self, message: str = "Invalid API Key"):
+    super().__init__(message, status.HTTP_401_UNAUTHORIZED)
