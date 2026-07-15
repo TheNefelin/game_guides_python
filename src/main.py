@@ -24,7 +24,8 @@ async def generic_error_handler(request: Request, exc: Exception):
 app.add_middleware(
   CORSMiddleware,
   allow_origins=[
-    "http://localhost:4200",
+    "http://localhost:4200",  # Angular
+    "http://localhost:4321",  # Astro
   ],
   allow_credentials=True,
   allow_methods=["GET", "POST", "PUT", "DELETE"],

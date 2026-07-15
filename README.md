@@ -137,3 +137,107 @@ src/
 - **Cross-cutting** en `core/` (config, security, exceptions)
 - **Errores**: `AppError` → middleware centralizado en `main.py`
 
+---
+
+## Autenticación con Google OAuth (Backend)
+
+### Endpoints
+
+| Método | Ruta | Request | Response |
+|--------|------|---------|----------|
+| POST | `/api/auth/google` | `{ googleToken: string }` | `{ token, refresh_token, user }` |
+| POST | `/api/auth/refresh` | `{ refreshToken: string }` | `{ token, refresh_token }` |
+| POST | `/api/auth/logout` | `{ refreshToken: string }` | `{ message }` |
+| GET | `/api/auth/me` | `Authorization: Bearer <token>` | `{ id_user, email, name, picture, role }` |
+
+### Flujo de autenticación
+
+```
+POST /api/auth/google { googleToken }
+  → google_service.validate_google_token(googleToken)
+      → GET https://oauth2.googleapis.com/tokeninfo?id_token=...
+      → verifica aud == GOOGLE_CLIENT_ID
+      → verifica email_verified
+  → service: busca usuario por email en BD
+      → si no existe: lo crea con role='user'
+  → security.create_access_token(user_id) → JWT (30 min)
+  → security.create_refresh_token(user_id) → refresh hasheado (7 días)
+  → response { token, refresh_token, user }
+```
+
+### Refresh token rotation
+
+```
+POST /api/auth/refresh { refreshToken }
+  → busca refresh token por hash en BD
+  → si expirado o revocado → 401
+  → rota: revoca el actual, crea uno nuevo
+  → response { token, refresh_token }
+```
+
+### Variables de entorno
+
+| Variable | Descripción |
+|----------|-------------|
+| `GOOGLE_CLIENT_ID` | Client ID de Google OAuth (mismo que PUBLIC_ del frontend) |
+| `GOOGLE_CLIENT_SECRET` | Client Secret de Google |
+| `JWT_SECRET_KEY` | Clave para firmar JWT (generar con `secrets.token_urlsafe(32)`) |
+| `JWT_ALGORITHM` | Algoritmo JWT (`HS256`) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Expiración access token (30) |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | Expiración refresh token (7) |
+| `DATABASE_URL` | Conexión PostgreSQL (`postgresql+asyncpg://...`) |
+
+### Estructura de archivos (auth)
+
+```
+src/api/auth/
+├── routes.py           → 4 endpoints (google, refresh, logout, me)
+├── schemas.py          → Pydantic: GoogleAuthRequest, TokenResponse, RefreshRequest
+├── service.py          → Lógica: autenticar, refrescar, revocar
+└── google_service.py   → Validación de token con Google API
+
+src/core/
+├── security.py         → JWT create/verify, hash refresh tokens, get_current_user
+└── config.py           → Settings con todas las env vars
+
+src/repositories/
+└── auth.py             → Queries: upsert_user, find_refresh_token, save_refresh_token, revoke_refresh_token
+
+src/models/
+└── models.py           → User, RefreshToken (SQLAlchemy)
+```
+
+### Google token validation (`google_service.py`)
+
+```python
+async def validate_google_token(google_token: str) -> GoogleUserData:
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            "https://oauth2.googleapis.com/tokeninfo",
+            params={"id_token": google_token},
+        )
+    if resp.status_code != 200:
+        raise InvalidGoogleTokenError()
+    data = resp.json()
+    if data.get("aud") != settings.GOOGLE_CLIENT_ID:
+        raise InvalidGoogleTokenError("aud mismatch")
+    if not data.get("email_verified"):
+        raise InvalidGoogleTokenError("email not verified")
+    return GoogleUserData(
+        email=data["email"],
+        name=data.get("name", ""),
+        picture=data.get("picture", ""),
+    )
+```
+
+### Cómo replicar en otro proyecto
+
+1. Copiar `src/api/auth/` completo
+2. Copiar `src/core/security.py` (solo JWT + refresh)
+3. Copiar `src/repositories/auth.py`
+4. Agregar modelos `User` y `RefreshToken` en `src/models/models.py`
+5. Agregar `src/core/exceptions.py` si no existe
+6. Copiar variables de entorno al `.env`
+7. Registrar el router en `main.py`: `app.include_router(auth_router, prefix="/api")`
+8. Dependencias: `python-jose[cryptography]`, `httpx`, `passlib[bcrypt]`
+
