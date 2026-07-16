@@ -139,7 +139,7 @@ src/
 - **Separación**: route → service → repository
 - **Route** decide HTTP (200, 201, 204, 404)
 - **Service** orquesta y aplica reglas de negocio
-- **Repository** solo consultas SQLAlchemy
+- **Repository** solo consultas SQLAlchemy (async con `AsyncSession` + `asyncpg`)
 - **Cross-cutting** en `core/` (config, security, exceptions, limiter, dependencies)
 - **Errores**: `AppError` → middleware centralizado en `main.py`
 - **API Key**: `X-Api-Key` header requerido globalmente vía `verify_api_key` en `core/dependencies.py`

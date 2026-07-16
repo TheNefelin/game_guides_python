@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
+from src.core.dependencies import verify_api_key
 from src.core.database import get_db
 from src.schemas import dtos
 from . import service
@@ -9,6 +10,7 @@ from . import service
 router = APIRouter(
   prefix="/genres",
   tags=["genres"],
+  dependencies=[Depends(verify_api_key)],
 )
 
 

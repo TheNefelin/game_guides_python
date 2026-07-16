@@ -2,11 +2,16 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
+from src.core.dependencies import verify_api_key
 from src.core import database
 from src.core.limiter import limiter
 from . import schemas, service
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(
+  prefix="/auth", 
+  tags=["auth"],
+  dependencies=[Depends(verify_api_key)],
+)
 
 
 @router.post(
