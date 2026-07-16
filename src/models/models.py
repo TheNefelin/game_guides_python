@@ -1,9 +1,8 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, Boolean, ForeignKey, func
+from sqlalchemy import String, Integer, Float, Boolean, ForeignKey, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import DateTime
 
 from src.core.database import Base
 
@@ -57,4 +56,37 @@ class Genre(Base):
 
   id: Mapped[int] = mapped_column(Integer, primary_key=True)
   name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+
+
+class Game(Base):
+  __tablename__ = 'gg_games'
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+  slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+  description: Mapped[str | None] = mapped_column(String, nullable=True)
+  cover_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+  release_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+  rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+  is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+  updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+  platforms: Mapped[list["Platforms"]] = relationship(secondary="gg_game_platforms")
+  genres: Mapped[list["Genre"]] = relationship(secondary="gg_game_genres")
+
+
+class GamePlatform(Base):
+  __tablename__ = 'gg_game_platforms'
+
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), primary_key=True)
+  platform_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_platforms.id"), primary_key=True)
+
+
+class GameGenre(Base):
+  __tablename__ = 'gg_game_genres'
+
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), primary_key=True)
+  genre_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_genres.id"), primary_key=True)
 

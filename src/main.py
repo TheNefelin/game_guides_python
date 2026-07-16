@@ -16,6 +16,7 @@ from src.core.logger import logger, set_request_id
 from src.api.auth.routes import router as auth_router
 from src.api.platforms.routes import router as platforms_router
 from src.api.genres.routes import router as genres_router
+from src.api.games.routes import router as games_router
 
 start_time = time.time()
 
@@ -83,3 +84,4 @@ async def health():
 app.include_router(auth_router, prefix="/api")
 app.include_router(platforms_router, prefix="/api")
 app.include_router(genres_router, prefix="/api")
+app.include_router(games_router, prefix="/api")
