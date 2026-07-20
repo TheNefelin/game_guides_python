@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
 from src.core.exceptions import DuplicateNameError
+from src.core.cloudinary import upload_image_1_1 as cloudinary_upload, delete_image as cloudinary_delete, extract_public_id
 from . import repository
 
 
@@ -56,6 +57,39 @@ async def delete(db: AsyncSession, id: int) -> bool:
 
   await repository.delete(db, entity)
   return True
+
+
+# UPLOAD IMAGE ---------------------------------------------------
+async def upload_image(db: AsyncSession, id: int, file_bytes: bytes) -> dtos.GameResponse | None:
+  entity = await repository.get_by_id(db, id)
+
+  if not entity:
+    return None
+
+  if entity.cover_url:
+    public_id = extract_public_id(entity.cover_url)
+    if public_id:
+      cloudinary_delete(public_id)
+
+  cover_url, _ = cloudinary_upload(file_bytes, folder="games")
+  entity = await repository.set_cover_url(db, id, cover_url)
+  return _entity_to_response(entity)
+
+
+# DELETE IMAGE ----------------------------------------------------
+async def delete_image(db: AsyncSession, id: int) -> dtos.GameResponse | None:
+  entity = await repository.get_by_id(db, id)
+
+  if not entity:
+    return None
+
+  if entity.cover_url:
+    public_id = extract_public_id(entity.cover_url)
+    if public_id:
+      cloudinary_delete(public_id)
+
+  entity = await repository.set_cover_url(db, id, None)
+  return _entity_to_response(entity)
 
 
 # HELPERS ---------------------------------------------------------

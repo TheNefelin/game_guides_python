@@ -67,7 +67,7 @@ class Game(Base):
   description: Mapped[str | None] = mapped_column(String, nullable=True)
   cover_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
   release_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
-  rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+  rating: Mapped[int | None] = mapped_column(Integer, nullable=True)
   is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
   sort_order: Mapped[int] = mapped_column(Integer, default=0)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

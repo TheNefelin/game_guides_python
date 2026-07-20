@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
@@ -69,6 +69,40 @@ async def create_game(data: dtos.GameRequest, db: AsyncSession = Depends(get_db)
 )
 async def update_game(id: int, data: dtos.GameRequest, db: AsyncSession = Depends(get_db)):
   game = await service.update(db, id, data)
+
+  if not game:
+    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
+
+  return game
+
+
+# UPLOAD IMAGE ----------------------------------------------------
+@router.post(
+  "/{id}/upload-image",
+  response_model=dtos.GameResponse,
+  status_code=HTTP_200_OK,
+  summary="Upload game cover image",
+  description="Uploads a square cover image for a game. Deletes the previous image if it exists.",
+)
+async def upload_game_image(id: int, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
+  game = await service.upload_image(db, id, await file.read())
+
+  if not game:
+    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
+
+  return game
+
+
+# DELETE IMAGE ----------------------------------------------------
+@router.delete(
+  "/{id}/image",
+  response_model=dtos.GameResponse,
+  status_code=HTTP_200_OK,
+  summary="Delete game cover image",
+  description="Deletes the cover image of a game from Cloudinary and clears the cover_url field.",
+)
+async def delete_game_image(id: int, db: AsyncSession = Depends(get_db)):
+  game = await service.delete_image(db, id)
 
   if not game:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")

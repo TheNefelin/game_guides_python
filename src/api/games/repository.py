@@ -93,6 +93,21 @@ async def update(db: AsyncSession, item: models.Game, data: dict) -> models.Game
   return result.unique().scalar_one()
 
 
+# UPDATE COVER URL ------------------------------------------------
+async def set_cover_url(db: AsyncSession, game_id: int, cover_url: str | None) -> models.Game:
+  result = await db.execute(select(models.Game).where(models.Game.id == game_id))
+  game = result.scalar_one()
+  game.cover_url = cover_url
+  await db.commit()
+  await db.refresh(game)
+  result = await db.execute(
+    select(models.Game)
+    .options(joinedload(models.Game.platforms), joinedload(models.Game.genres))
+    .where(models.Game.id == game_id)
+  )
+  return result.unique().scalar_one()
+
+
 # DELETE ----------------------------------------------------------
 async def delete(db: AsyncSession, item: models.Game) -> None:
   await db.execute(models.GamePlatform.__table__.delete().where(models.GamePlatform.game_id == item.id))

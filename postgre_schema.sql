@@ -3,12 +3,12 @@
 -- ============================================================
 
 -- Drop existentes (orden inverso a creación)
-DROP TABLE IF EXISTS gg_user_sessions CASCADE;
 DROP TABLE IF EXISTS gg_game_genres CASCADE;
 DROP TABLE IF EXISTS gg_game_platforms CASCADE;
 DROP TABLE IF EXISTS gg_games CASCADE;
 DROP TABLE IF EXISTS gg_genres CASCADE;
 DROP TABLE IF EXISTS gg_platforms CASCADE;
+DROP TABLE IF EXISTS gg_user_sessions CASCADE;
 DROP TABLE IF EXISTS gg_users CASCADE;
 DROP TABLE IF EXISTS gg_roles CASCADE;
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS gg_games (
   description TEXT,
   cover_url   VARCHAR(512),
   release_year SMALLINT,
-  rating       DECIMAL(2,1),
+  rating       SMALLINT CHECK (rating >= 1 AND rating <= 10),
   is_enabled   BOOLEAN NOT NULL DEFAULT TRUE,
   sort_order   SMALLINT NOT NULL DEFAULT 0,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),

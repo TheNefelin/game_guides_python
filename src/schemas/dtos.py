@@ -62,7 +62,7 @@ class GameRequest(BaseModel):
   description: str | None = None
   cover_url: str | None = None
   release_year: int | None = None
-  rating: float | None = None
+  rating: int | None = Field(default=None, ge=1, le=10)
   is_enabled: bool = True
   sort_order: int = 0
   platform_ids: list[int] = []
@@ -76,7 +76,7 @@ class GameResponse(AppModel):
   description: str | None
   cover_url: str | None
   release_year: int | None
-  rating: float | None
+  rating: int | None
   is_enabled: bool
   sort_order: int
   created_at: str
