@@ -33,6 +33,8 @@ pip install google-auth google-auth-oauthlib google-auth-httplib2
 pip install pydantic[email]
 pip install python-jose[cryptography]
 pip install slowapi
+pip install python-multipart
+pip install cloudinary
 ```
 ### 3. (Opcional) Dependencias de test
 ```sh
