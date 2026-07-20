@@ -1,4 +1,4 @@
-# Game Guides - API Python
+# Game Guides - API Python 3.12.x + PostgreSQL
 
 Backend del proyecto Game Guides desarrollado con Python 3.12 + FastAPI y PostgreSQL, siguiendo el patrón Senior.
 
@@ -49,7 +49,7 @@ Instalar desde requirements:
 pip install -r requirements.txt
 ```
 
-### 3. Configurar variables de entorno
+### 4. Configurar variables de entorno
 Crear archivo `.env` basado en `.env_demo`:
 ```sh
 cp .env_demo .env
