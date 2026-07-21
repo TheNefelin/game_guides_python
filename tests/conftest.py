@@ -10,7 +10,7 @@ from src.main import app
 from src.models.models import Role, User, UserSession, Platforms, Genre
 
 
-engine = create_async_engine(settings.async_database_url, poolclass=NullPool)
+engine = create_async_engine(settings.TEST_DATABASE_URL, poolclass=NullPool)
 TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 
 

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
   SECRET_KEY: str
   DATABASE_URL: str
   API_KEY: str
+  TEST_DATABASE_URL: str
 
   CORS_ORIGINS: str
 
@@ -19,10 +20,6 @@ class Settings(BaseSettings):
   @property
   def cors_origins_list(self) -> list[str]:
     return json.loads(self.CORS_ORIGINS)
-
-  @property
-  def async_database_url(self) -> str:
-    return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
   model_config = SettingsConfigDict(
     env_file=".env",
