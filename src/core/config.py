@@ -9,7 +9,7 @@ class Settings(BaseSettings):
   SECRET_KEY: str
   DATABASE_URL: str
   API_KEY: str
-  TEST_DATABASE_URL: str
+  TEST_DATABASE_URL: str | None = None
 
   CORS_ORIGINS: str
 
