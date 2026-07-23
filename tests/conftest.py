@@ -7,7 +7,7 @@ from src.core.database import Base, get_db
 from src.core.config import settings
 from src.core.dependencies import verify_api_key
 from src.main import app
-from src.models.models import Role, User, UserSession, Platforms, Genre
+from src.models.models import Role, User, UserSession, Platforms, Genre, Game, GamePlatform, GameGenre, Character, Source
 
 
 engine = create_async_engine(settings.TEST_DATABASE_URL, poolclass=NullPool)
@@ -18,6 +18,11 @@ async def _clean_tables(session: AsyncSession):
   """Delete all data from test-relevant tables in FK-safe order."""
   await session.execute(UserSession.__table__.delete())
   await session.execute(User.__table__.delete())
+  await session.execute(Source.__table__.delete())
+  await session.execute(Character.__table__.delete())
+  await session.execute(GameGenre.__table__.delete())
+  await session.execute(GamePlatform.__table__.delete())
+  await session.execute(Game.__table__.delete())
   await session.execute(Platforms.__table__.delete())
   await session.execute(Genre.__table__.delete())
   await session.execute(Role.__table__.delete())

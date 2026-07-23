@@ -17,6 +17,8 @@ from src.api.auth.routes import router as auth_router
 from src.api.platforms.routes import router as platforms_router
 from src.api.genres.routes import router as genres_router
 from src.api.games.routes import router as games_router
+from src.api.characters.routes import router as characters_router
+from src.api.sources.routes import router as sources_router
 
 start_time = time.time()
 
@@ -85,3 +87,5 @@ app.include_router(auth_router, prefix="/api")
 app.include_router(platforms_router, prefix="/api")
 app.include_router(genres_router, prefix="/api")
 app.include_router(games_router, prefix="/api")
+app.include_router(characters_router, prefix="/api")
+app.include_router(sources_router, prefix="/api")

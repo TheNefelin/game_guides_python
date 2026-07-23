@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 from typing import Generic, TypeVar
 from pydantic import BaseModel, ConfigDict, Field
@@ -83,4 +84,46 @@ class GameResponse(AppModel):
   updated_at: str
   platforms: list[PlatformsResponse] = []
   genres: list[GenreResponse] = []
+
+
+# CHARACTERS -------------------------------------------------------
+class CharacterRequest(BaseModel):
+  game_id: int
+  name: str = Field(min_length=1, max_length=100)
+  slug: str = Field(min_length=1, max_length=100)
+  description: str | None = None
+  image_url: str | None = None
+  is_playable: bool = True
+  sort_order: int = 0
+
+
+class CharacterResponse(AppModel):
+  id: int
+  game_id: int
+  name: str
+  slug: str
+  description: str | None
+  image_url: str | None
+  is_playable: bool
+  sort_order: int
+  created_at: datetime
+  updated_at: datetime
+
+
+# SOURCES ----------------------------------------------------------
+class SourceRequest(BaseModel):
+  game_id: int
+  name: str = Field(min_length=1, max_length=200)
+  url: str = Field(min_length=1, max_length=1000)
+  sort_order: int = 0
+
+
+class SourceResponse(AppModel):
+  id: int
+  game_id: int
+  name: str
+  url: str
+  sort_order: int
+  created_at: datetime
+  updated_at: datetime
 

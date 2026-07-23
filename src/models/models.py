@@ -77,6 +77,33 @@ class Game(Base):
   genres: Mapped[list["Genre"]] = relationship(secondary="gg_game_genres")
 
 
+class Character(Base):
+  __tablename__ = 'gg_characters'
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), nullable=False)
+  name: Mapped[str] = mapped_column(String(100), nullable=False)
+  slug: Mapped[str] = mapped_column(String(100), nullable=False)
+  description: Mapped[str | None] = mapped_column(String, nullable=True)
+  image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+  is_playable: Mapped[bool] = mapped_column(Boolean, default=True)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+  updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class Source(Base):
+  __tablename__ = 'gg_sources'
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), nullable=False)
+  name: Mapped[str] = mapped_column(String(200), nullable=False)
+  url: Mapped[str] = mapped_column(String(1000), nullable=False)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+  updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
 class GamePlatform(Base):
   __tablename__ = 'gg_game_platforms'
 
