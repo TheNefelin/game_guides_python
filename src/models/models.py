@@ -58,6 +58,7 @@ class Genre(Base):
   name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
 
 
+# GAMES ----------------------------------------------------------------
 class Game(Base):
   __tablename__ = 'gg_games'
 
@@ -77,6 +78,22 @@ class Game(Base):
   genres: Mapped[list["Genre"]] = relationship(secondary="gg_game_genres")
 
 
+# ASSOCIATION TABLES ----------------------------------------------------
+class GamePlatform(Base):
+  __tablename__ = 'gg_game_platforms'
+
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), primary_key=True)
+  platform_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_platforms.id"), primary_key=True)
+
+
+class GameGenre(Base):
+  __tablename__ = 'gg_game_genres'
+
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), primary_key=True)
+  genre_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_genres.id"), primary_key=True)
+
+
+# CHARACTERS ------------------------------------------------------------
 class Character(Base):
   __tablename__ = 'gg_characters'
 
@@ -92,6 +109,7 @@ class Character(Base):
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
+# SOURCES ---------------------------------------------------------------
 class Source(Base):
   __tablename__ = 'gg_sources'
 
@@ -104,16 +122,24 @@ class Source(Base):
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
-class GamePlatform(Base):
-  __tablename__ = 'gg_game_platforms'
+# SCREENSHOTS -----------------------------------------------------------
+class Screenshot(Base):
+  __tablename__ = 'gg_screenshots'
 
-  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), primary_key=True)
-  platform_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_platforms.id"), primary_key=True)
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), nullable=False)
+  image_url: Mapped[str] = mapped_column(String(512), nullable=False)
+  alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
-class GameGenre(Base):
-  __tablename__ = 'gg_game_genres'
+# MAPS ------------------------------------------------------------------
+class Map(Base):
+  __tablename__ = 'gg_maps'
 
-  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), primary_key=True)
-  genre_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_genres.id"), primary_key=True)
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), nullable=False)
+  image_url: Mapped[str] = mapped_column(String(512), nullable=False)
+  alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

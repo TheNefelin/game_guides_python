@@ -46,6 +46,17 @@ def upload_image_1_1(file_bytes: bytes, folder: str, public_id: str = None) -> t
   return result["secure_url"], result["public_id"]
 
 
+def upload_image_free(file_bytes: bytes, folder: str, public_id: str = None) -> tuple[str, str]:
+  result = cloudinary.uploader.upload(
+    file_bytes,
+    folder=folder,
+    public_id=public_id,
+    resource_type="image",
+    format="webp",
+  )
+  return result["secure_url"], result["public_id"]
+
+
 def delete_image(public_id: str):
   cloudinary.uploader.destroy(public_id, resource_type="image")
 

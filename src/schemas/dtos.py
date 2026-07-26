@@ -127,3 +127,21 @@ class SourceResponse(AppModel):
   created_at: datetime
   updated_at: datetime
 
+
+# SCREENSHOTS ------------------------------------------------------
+class ScreenshotResponse(AppModel):
+  id: int
+  game_id: int
+  image_url: str
+  alt_text: str | None
+  created_at: datetime
+
+
+# MAPS -------------------------------------------------------------
+class MapResponse(AppModel):
+  id: int
+  game_id: int
+  image_url: str
+  alt_text: str | None
+  created_at: datetime
+

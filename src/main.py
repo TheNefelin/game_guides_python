@@ -19,6 +19,8 @@ from src.api.genres.routes import router as genres_router
 from src.api.games.routes import router as games_router
 from src.api.characters.routes import router as characters_router
 from src.api.sources.routes import router as sources_router
+from src.api.screenshots.routes import router as screenshots_router
+from src.api.maps.routes import router as maps_router
 
 start_time = time.time()
 
@@ -89,3 +91,5 @@ app.include_router(genres_router, prefix="/api")
 app.include_router(games_router, prefix="/api")
 app.include_router(characters_router, prefix="/api")
 app.include_router(sources_router, prefix="/api")
+app.include_router(screenshots_router, prefix="/api")
+app.include_router(maps_router, prefix="/api")
