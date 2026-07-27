@@ -115,3 +115,45 @@ WHERE (g.name, c.name) IN (
 )
 ON CONFLICT DO NOTHING;
 
+-- ============================================================
+-- Screenshots
+-- ============================================================
+INSERT INTO gg_screenshots (game_id, image_url, alt_text)
+SELECT g.id, s.image_url, s.alt_text FROM gg_games g, (VALUES
+  ('chrono-cross',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785105166/screenshots/vxn9oi17pjyelagijzob.webp',
+   'Portada del Juego'),
+  ('chrono-cross',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785105199/screenshots/vcxapocm2xnztlklycho.webp',
+   'Todos los Personajes'),
+  ('darksiders-2',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785110631/screenshots/jwix8ewfhgusrj2mqln6.webp',
+   'DarkSiders 2'),
+  ('darksiders-2',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785110637/screenshots/dscqhniygazijdxbonnr.webp',
+   'DarkSiders 2')
+) AS s(slug, image_url, alt_text)
+WHERE g.slug = s.slug
+ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- Maps
+-- ============================================================
+INSERT INTO gg_maps (game_id, image_url, alt_text)
+SELECT g.id, m.image_url, m.alt_text FROM gg_games g, (VALUES
+  ('darksiders-2',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785111077/maps/sbywzljtsqtg3odqra50.webp',
+   'The Forge Lands'),
+  ('darksiders-2',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785111177/maps/txclq42sqsajdvkv7ge2.webp',
+   'Kingdom of the Dead'),
+  ('darksiders-2',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785114557/maps/hvdktzhzrfxu50vpufw8.webp',
+   'Lostlight'),
+  ('darksiders-2',
+   'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785114608/maps/s3gzkujoslz5xqdj2osj.webp',
+   'Shadows Edge')
+) AS m(slug, image_url, alt_text)
+WHERE g.slug = m.slug
+ON CONFLICT DO NOTHING;
+
