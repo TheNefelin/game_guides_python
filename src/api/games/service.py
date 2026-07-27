@@ -108,4 +108,6 @@ def _entity_to_response(entity) -> dtos.GameResponse:
     updated_at=entity.updated_at.isoformat(),
     platforms=[dtos.PlatformsResponse(id=p.id, name=p.name) for p in entity.platforms],
     genres=[dtos.GenreResponse(id=g.id, name=g.name) for g in entity.genres],
+    screenshots=[dtos.ScreenshotResponse.model_validate(s) for s in entity.screenshots],
+    maps=[dtos.MapResponse.model_validate(m) for m in entity.maps],
   )

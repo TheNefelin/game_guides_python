@@ -76,6 +76,8 @@ class Game(Base):
 
   platforms: Mapped[list["Platforms"]] = relationship(secondary="gg_game_platforms")
   genres: Mapped[list["Genre"]] = relationship(secondary="gg_game_genres")
+  screenshots: Mapped[list["Screenshot"]] = relationship(back_populates="game", order_by="Screenshot.id")
+  maps: Mapped[list["Map"]] = relationship(back_populates="game", order_by="Map.id")
 
 
 # ASSOCIATION TABLES ----------------------------------------------------
@@ -132,6 +134,8 @@ class Screenshot(Base):
   alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+  game: Mapped["Game"] = relationship(back_populates="screenshots")
+
 
 # MAPS ------------------------------------------------------------------
 class Map(Base):
@@ -142,4 +146,6 @@ class Map(Base):
   image_url: Mapped[str] = mapped_column(String(512), nullable=False)
   alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+  game: Mapped["Game"] = relationship(back_populates="maps")
 

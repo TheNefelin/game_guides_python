@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 from typing import Generic, TypeVar
@@ -84,6 +85,8 @@ class GameResponse(AppModel):
   updated_at: str
   platforms: list[PlatformsResponse] = []
   genres: list[GenreResponse] = []
+  screenshots: list[ScreenshotResponse] = []
+  maps: list[MapResponse] = []
 
 
 # CHARACTERS -------------------------------------------------------

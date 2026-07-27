@@ -1,5 +1,5 @@
 from sqlalchemy import select, exists, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import models
@@ -16,7 +16,12 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> list[mode
   offset = (page - 1) * limit
   result = await db.execute(
     select(models.Game)
-    .options(joinedload(models.Game.platforms), joinedload(models.Game.genres))
+    .options(
+      joinedload(models.Game.platforms),
+      joinedload(models.Game.genres),
+      selectinload(models.Game.screenshots),
+      selectinload(models.Game.maps),
+    )
     .order_by(models.Game.sort_order, models.Game.name)
     .offset(offset)
     .limit(limit)
@@ -35,7 +40,12 @@ async def exists_by_name(db: AsyncSession, name: str) -> bool:
 async def get_by_id(db: AsyncSession, id: int) -> models.Game | None:
   result = await db.execute(
     select(models.Game)
-    .options(joinedload(models.Game.platforms), joinedload(models.Game.genres))
+    .options(
+      joinedload(models.Game.platforms),
+      joinedload(models.Game.genres),
+      selectinload(models.Game.screenshots),
+      selectinload(models.Game.maps),
+    )
     .where(models.Game.id == id)
   )
   return result.unique().scalar_one_or_none()
@@ -59,7 +69,12 @@ async def create(db: AsyncSession, data: dict) -> models.Game:
   await db.commit()
   result = await db.execute(
     select(models.Game)
-    .options(joinedload(models.Game.platforms), joinedload(models.Game.genres))
+    .options(
+      joinedload(models.Game.platforms),
+      joinedload(models.Game.genres),
+      selectinload(models.Game.screenshots),
+      selectinload(models.Game.maps),
+    )
     .where(models.Game.id == item_id)
   )
   return result.unique().scalar_one()
@@ -87,7 +102,12 @@ async def update(db: AsyncSession, item: models.Game, data: dict) -> models.Game
   await db.commit()
   result = await db.execute(
     select(models.Game)
-    .options(joinedload(models.Game.platforms), joinedload(models.Game.genres))
+    .options(
+      joinedload(models.Game.platforms),
+      joinedload(models.Game.genres),
+      selectinload(models.Game.screenshots),
+      selectinload(models.Game.maps),
+    )
     .where(models.Game.id == item_id)
   )
   return result.unique().scalar_one()
@@ -102,7 +122,12 @@ async def set_cover_url(db: AsyncSession, game_id: int, cover_url: str | None) -
   await db.refresh(game)
   result = await db.execute(
     select(models.Game)
-    .options(joinedload(models.Game.platforms), joinedload(models.Game.genres))
+    .options(
+      joinedload(models.Game.platforms),
+      joinedload(models.Game.genres),
+      selectinload(models.Game.screenshots),
+      selectinload(models.Game.maps),
+    )
     .where(models.Game.id == game_id)
   )
   return result.unique().scalar_one()
