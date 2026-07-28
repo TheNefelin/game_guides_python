@@ -5,6 +5,11 @@ from src.core.exceptions import DuplicateNameError
 from . import repository
 
 
+async def get_by_game(db: AsyncSession, game_id: int) -> list[dtos.SourceResponse]:
+  entities = await repository.get_by_game(db, game_id)
+  return [dtos.SourceResponse.model_validate(e) for e in entities]
+
+
 async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None) -> dtos.PaginationResponse[dtos.SourceResponse]:
   total = await repository.count(db, game_id)
   entities = await repository.get_all(db, page, limit, game_id)
