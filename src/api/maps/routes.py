@@ -27,7 +27,7 @@ async def get_maps(
 
 
 @router.post(
-  "/",
+  "/upload-image",
   response_model=dtos.MapResponse,
   status_code=HTTP_201_CREATED,
 )

@@ -27,7 +27,7 @@ async def get_screenshots(
 
 
 @router.post(
-  "/",
+  "/upload-image",
   response_model=dtos.ScreenshotResponse,
   status_code=HTTP_201_CREATED,
 )

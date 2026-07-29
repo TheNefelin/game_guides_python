@@ -78,14 +78,18 @@ async def update_game(id: int, data: dtos.GameRequest, db: AsyncSession = Depend
 
 # UPLOAD IMAGE ----------------------------------------------------
 @router.post(
-  "/{id}/upload-image",
+  "/upload-image",
   response_model=dtos.GameResponse,
   status_code=HTTP_200_OK,
   summary="Upload game cover image",
   description="Uploads a square cover image for a game. Deletes the previous image if it exists.",
 )
-async def upload_game_image(id: int, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
-  game = await service.upload_image(db, id, await file.read())
+async def upload_game_image(
+  game_id: int = Form(), 
+  file: UploadFile = File(...), 
+  db: AsyncSession = Depends(get_db)
+):
+  game = await service.upload_image(db, game_id, await file.read())
 
   if not game:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
