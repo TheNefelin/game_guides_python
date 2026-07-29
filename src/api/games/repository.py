@@ -21,6 +21,8 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> list[mode
       joinedload(models.Game.genres),
       selectinload(models.Game.screenshots),
       selectinload(models.Game.maps),
+      selectinload(models.Game.characters),
+      selectinload(models.Game.sources),
     )
     .order_by(models.Game.sort_order, models.Game.name)
     .offset(offset)
@@ -45,6 +47,8 @@ async def get_by_id(db: AsyncSession, id: int) -> models.Game | None:
       joinedload(models.Game.genres),
       selectinload(models.Game.screenshots),
       selectinload(models.Game.maps),
+      selectinload(models.Game.characters),
+      selectinload(models.Game.sources),
     )
     .where(models.Game.id == id)
   )
@@ -74,6 +78,8 @@ async def create(db: AsyncSession, data: dict) -> models.Game:
       joinedload(models.Game.genres),
       selectinload(models.Game.screenshots),
       selectinload(models.Game.maps),
+      selectinload(models.Game.characters),
+      selectinload(models.Game.sources),
     )
     .where(models.Game.id == item_id)
   )
@@ -107,6 +113,8 @@ async def update(db: AsyncSession, item: models.Game, data: dict) -> models.Game
       joinedload(models.Game.genres),
       selectinload(models.Game.screenshots),
       selectinload(models.Game.maps),
+      selectinload(models.Game.characters),
+      selectinload(models.Game.sources),
     )
     .where(models.Game.id == item_id)
   )
@@ -127,6 +135,8 @@ async def set_cover_url(db: AsyncSession, game_id: int, cover_url: str | None) -
       joinedload(models.Game.genres),
       selectinload(models.Game.screenshots),
       selectinload(models.Game.maps),
+      selectinload(models.Game.characters),
+      selectinload(models.Game.sources),
     )
     .where(models.Game.id == game_id)
   )

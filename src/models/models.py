@@ -78,6 +78,8 @@ class Game(Base):
   genres: Mapped[list["Genre"]] = relationship(secondary="gg_game_genres")
   screenshots: Mapped[list["Screenshot"]] = relationship(back_populates="game", order_by="Screenshot.id")
   maps: Mapped[list["Map"]] = relationship(back_populates="game", order_by="Map.id")
+  characters: Mapped[list["Character"]] = relationship(back_populates="game", order_by="Character.id")
+  sources: Mapped[list["Source"]] = relationship(back_populates="game", order_by="Source.id")
 
 
 # ASSOCIATION TABLES ----------------------------------------------------
@@ -110,6 +112,8 @@ class Character(Base):
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+  game: Mapped["Game"] = relationship(back_populates="characters")
+
 
 # SOURCES ---------------------------------------------------------------
 class Source(Base):
@@ -122,6 +126,8 @@ class Source(Base):
   sort_order: Mapped[int] = mapped_column(Integer, default=0)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+  game: Mapped["Game"] = relationship(back_populates="sources")
 
 
 # SCREENSHOTS -----------------------------------------------------------

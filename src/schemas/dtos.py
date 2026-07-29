@@ -87,6 +87,8 @@ class GameResponse(AppModel):
   genres: list[GenreResponse] = []
   screenshots: list[ScreenshotResponse] = []
   maps: list[MapResponse] = []
+  characters: list[CharacterResponse] = []
+  sources: list[SourceResponse] = []
 
 
 # CHARACTERS -------------------------------------------------------
