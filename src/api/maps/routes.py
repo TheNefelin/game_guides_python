@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
@@ -15,14 +15,13 @@ router = APIRouter(
 
 
 @router.get(
-  "/",
+  "/by-game/{game_id}",
   response_model=list[dtos.MapResponse],
   status_code=HTTP_200_OK,
+  summary="Get maps by game",
+  description="Returns all maps for a game, without pagination.",
 )
-async def get_maps(
-  game_id: int = Query(),
-  db: AsyncSession = Depends(get_db),
-):
+async def get_maps_by_game(game_id: int, db: AsyncSession = Depends(get_db)):
   return await service.get_by_game(db, game_id)
 
 
