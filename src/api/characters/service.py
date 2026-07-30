@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
 from src.core.exceptions import DuplicateNameError
+from src.core.cloudinary import upload_image_1_1, delete_image as cloudinary_delete, extract_public_id
 from . import repository
 
 
@@ -51,3 +52,32 @@ async def delete(db: AsyncSession, id: int) -> bool:
     return False
   await repository.delete(db, entity)
   return True
+
+
+async def upload_image(db: AsyncSession, id: int, file_bytes: bytes) -> dtos.CharacterResponse | None:
+  entity = await repository.get_by_id(db, id)
+  if not entity:
+    return None
+
+  if entity.image_url:
+    public_id = extract_public_id(entity.image_url)
+    if public_id:
+      cloudinary_delete(public_id)
+
+  image_url, _ = upload_image_1_1(file_bytes, folder="characters")
+  updated = await repository.update(db, entity, {"image_url": image_url})
+  return dtos.CharacterResponse.model_validate(updated)
+
+
+async def delete_image(db: AsyncSession, id: int) -> dtos.CharacterResponse | None:
+  entity = await repository.get_by_id(db, id)
+  if not entity:
+    return None
+
+  if entity.image_url:
+    public_id = extract_public_id(entity.image_url)
+    if public_id:
+      cloudinary_delete(public_id)
+
+  updated = await repository.update(db, entity, {"image_url": None})
+  return dtos.CharacterResponse.model_validate(updated)

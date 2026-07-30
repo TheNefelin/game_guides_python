@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
@@ -90,3 +90,37 @@ async def delete_character(id: int, db: AsyncSession = Depends(get_db)):
   deleted = await service.delete(db, id)
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
+
+
+# UPLOAD IMAGE ----------------------------------------------------
+@router.post(
+  "/upload-image",
+  response_model=dtos.CharacterResponse,
+  status_code=HTTP_200_OK,
+  summary="Upload character image",
+  description="Uploads a square image for a character. Deletes the previous image if it exists.",
+)
+async def upload_character_image(
+  id: int = Form(),
+  file: UploadFile = File(...),
+  db: AsyncSession = Depends(get_db)
+):
+  character = await service.upload_image(db, id, await file.read())
+  if not character:
+    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
+  return character
+
+
+# DELETE IMAGE ----------------------------------------------------
+@router.delete(
+  "/{id}/image",
+  response_model=dtos.CharacterResponse,
+  status_code=HTTP_200_OK,
+  summary="Delete character image",
+  description="Deletes the image of a character from Cloudinary and clears the image_url field.",
+)
+async def delete_character_image(id: int, db: AsyncSession = Depends(get_db)):
+  character = await service.delete_image(db, id)
+  if not character:
+    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
+  return character

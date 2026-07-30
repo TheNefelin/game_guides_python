@@ -83,12 +83,12 @@ class GameResponse(AppModel):
   sort_order: int
   created_at: str
   updated_at: str
-  platforms: list[PlatformsResponse] = []
-  genres: list[GenreResponse] = []
-  screenshots: list[ScreenshotResponse] = []
-  maps: list[MapResponse] = []
-  characters: list[CharacterResponse] = []
-  sources: list[SourceResponse] = []
+  platforms: list[PlatformsResponse]
+  genres: list[GenreResponse]
+  screenshots: list[ScreenshotResponse]
+  maps: list[MapResponse]
+  characters: list[CharacterResponse]
+  sources: list[SourceResponse]
 
 
 # CHARACTERS -------------------------------------------------------
