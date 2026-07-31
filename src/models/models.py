@@ -78,7 +78,7 @@ class Game(Base):
   genres: Mapped[list["Genre"]] = relationship(secondary="gg_game_genres")
   screenshots: Mapped[list["Screenshot"]] = relationship(back_populates="game", order_by="Screenshot.id")
   maps: Mapped[list["Map"]] = relationship(back_populates="game", order_by="Map.id")
-  characters: Mapped[list["Character"]] = relationship(back_populates="game", order_by="Character.id")
+  characters: Mapped[list["Character"]] = relationship(back_populates="game", order_by="Character.sort_order, Character.name")
   sources: Mapped[list["Source"]] = relationship(back_populates="game", order_by="Source.id")
 
 
