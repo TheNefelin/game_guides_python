@@ -101,11 +101,11 @@ async def delete_character(id: int, db: AsyncSession = Depends(get_db)):
   description="Uploads a square image for a character. Deletes the previous image if it exists.",
 )
 async def upload_character_image(
-  id: int = Form(),
+  game_id: int = Form(),
   file: UploadFile = File(...),
   db: AsyncSession = Depends(get_db)
 ):
-  character = await service.upload_image(db, id, await file.read())
+  character = await service.upload_image(db, game_id, await file.read())
   if not character:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
   return character
