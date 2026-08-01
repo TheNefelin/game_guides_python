@@ -40,10 +40,12 @@ async def create_screenshot(
 
 
 @router.delete(
-  "/{id}",
+  "/{id}/image",
   status_code=HTTP_204_NO_CONTENT,
+  summary="Delete screenshot image",
+  description="Deletes a screenshot image from Cloudinary and removes the record. Raises 404 if not found.",
 )
-async def delete_screenshot(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_screenshot_image(id: int, db: AsyncSession = Depends(get_db)):
   deleted = await service.delete(db, id)
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Screenshot not found")

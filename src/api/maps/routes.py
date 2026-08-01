@@ -40,10 +40,12 @@ async def create_map(
 
 
 @router.delete(
-  "/{id}",
+  "/{id}/image",
   status_code=HTTP_204_NO_CONTENT,
+  summary="Delete map image",
+  description="Deletes a map image from Cloudinary and removes the record. Raises 404 if not found.",
 )
-async def delete_map(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_map_image(id: int, db: AsyncSession = Depends(get_db)):
   deleted = await service.delete(db, id)
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Map not found")
