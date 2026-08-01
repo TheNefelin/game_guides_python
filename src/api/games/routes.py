@@ -47,6 +47,40 @@ async def get_game_by_id(id: int, db: AsyncSession = Depends(get_db)):
   return game
 
 
+# GET DETAIL BY ID ------------------------------------------------
+@router.get(
+  "/{id}/detail",
+  response_model=dtos.GameDetailResponse,
+  status_code=HTTP_200_OK,
+  summary="Get game detail by ID",
+  description="Returns the full enriched detail of a game with all its relations. Raises 404 if not found.",
+)
+async def get_game_detail_by_id(id: int, db: AsyncSession = Depends(get_db)):
+  game = await service.get_detail_by_id(db, id)
+
+  if not game:
+    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
+
+  return game
+
+
+# GET DETAIL BY SLUG ------------------------------------------------
+@router.get(
+  "/by-slug/{slug}/detail",
+  response_model=dtos.GameDetailResponse,
+  status_code=HTTP_200_OK,
+  summary="Get game detail by slug",
+  description="Returns the full enriched detail of a game matching the slug. Raises 404 if not found.",
+)
+async def get_game_detail_by_slug(slug: str, db: AsyncSession = Depends(get_db)):
+  game = await service.get_detail_by_slug(db, slug)
+
+  if not game:
+    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
+
+  return game
+
+
 # CREATE ----------------------------------------------------------
 @router.post(
   "/",

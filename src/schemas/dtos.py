@@ -85,6 +85,9 @@ class GameResponse(AppModel):
   updated_at: str
   platforms: list[PlatformsResponse]
   genres: list[GenreResponse]
+
+
+class GameDetailResponse(GameResponse):
   screenshots: list[ScreenshotResponse]
   maps: list[MapResponse]
   characters: list[CharacterResponse]

@@ -19,10 +19,6 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> list[mode
     .options(
       joinedload(models.Game.platforms),
       joinedload(models.Game.genres),
-      selectinload(models.Game.screenshots),
-      selectinload(models.Game.maps),
-      selectinload(models.Game.characters),
-      selectinload(models.Game.sources),
     )
     .order_by(models.Game.sort_order, models.Game.name)
     .offset(offset)
@@ -45,12 +41,42 @@ async def get_by_id(db: AsyncSession, id: int) -> models.Game | None:
     .options(
       joinedload(models.Game.platforms),
       joinedload(models.Game.genres),
+    )
+    .where(models.Game.id == id)
+  )
+  return result.unique().scalar_one_or_none()
+
+
+# GET DETAIL BY ID -------------------------------------------------
+async def get_detail_by_id(db: AsyncSession, id: int) -> models.Game | None:
+  result = await db.execute(
+    select(models.Game)
+    .options(
+      joinedload(models.Game.platforms),
+      joinedload(models.Game.genres),
       selectinload(models.Game.screenshots),
       selectinload(models.Game.maps),
       selectinload(models.Game.characters),
       selectinload(models.Game.sources),
     )
     .where(models.Game.id == id)
+  )
+  return result.unique().scalar_one_or_none()
+
+
+# GET DETAIL BY SLUG -----------------------------------------------
+async def get_detail_by_slug(db: AsyncSession, slug: str) -> models.Game | None:
+  result = await db.execute(
+    select(models.Game)
+    .options(
+      joinedload(models.Game.platforms),
+      joinedload(models.Game.genres),
+      selectinload(models.Game.screenshots),
+      selectinload(models.Game.maps),
+      selectinload(models.Game.characters),
+      selectinload(models.Game.sources),
+    )
+    .where(models.Game.slug == slug)
   )
   return result.unique().scalar_one_or_none()
 
@@ -76,10 +102,6 @@ async def create(db: AsyncSession, data: dict) -> models.Game:
     .options(
       joinedload(models.Game.platforms),
       joinedload(models.Game.genres),
-      selectinload(models.Game.screenshots),
-      selectinload(models.Game.maps),
-      selectinload(models.Game.characters),
-      selectinload(models.Game.sources),
     )
     .where(models.Game.id == item_id)
   )
@@ -111,10 +133,6 @@ async def update(db: AsyncSession, item: models.Game, data: dict) -> models.Game
     .options(
       joinedload(models.Game.platforms),
       joinedload(models.Game.genres),
-      selectinload(models.Game.screenshots),
-      selectinload(models.Game.maps),
-      selectinload(models.Game.characters),
-      selectinload(models.Game.sources),
     )
     .where(models.Game.id == item_id)
   )
@@ -133,10 +151,6 @@ async def set_cover_url(db: AsyncSession, game_id: int, cover_url: str | None) -
     .options(
       joinedload(models.Game.platforms),
       joinedload(models.Game.genres),
-      selectinload(models.Game.screenshots),
-      selectinload(models.Game.maps),
-      selectinload(models.Game.characters),
-      selectinload(models.Game.sources),
     )
     .where(models.Game.id == game_id)
   )

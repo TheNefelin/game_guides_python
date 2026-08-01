@@ -25,6 +25,26 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.GameResponse | None:
   return _entity_to_response(entity)
 
 
+# GET DETAIL BY ID -------------------------------------------------
+async def get_detail_by_id(db: AsyncSession, id: int) -> dtos.GameDetailResponse | None:
+  entity = await repository.get_detail_by_id(db, id)
+
+  if not entity:
+    return None
+
+  return _entity_to_detail_response(entity)
+
+
+# GET DETAIL BY SLUG -----------------------------------------------
+async def get_detail_by_slug(db: AsyncSession, slug: str) -> dtos.GameDetailResponse | None:
+  entity = await repository.get_detail_by_slug(db, slug)
+
+  if not entity:
+    return None
+
+  return _entity_to_detail_response(entity)
+
+
 # CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, data: dtos.GameRequest) -> dtos.GameResponse:
   if await repository.exists_by_name(db, data.name):
@@ -95,6 +115,24 @@ async def delete_image(db: AsyncSession, id: int) -> dtos.GameResponse | None:
 # HELPERS ---------------------------------------------------------
 def _entity_to_response(entity) -> dtos.GameResponse:
   return dtos.GameResponse(
+    id=entity.id,
+    name=entity.name,
+    slug=entity.slug,
+    description=entity.description,
+    cover_url=entity.cover_url,
+    release_year=entity.release_year,
+    rating=entity.rating,
+    is_enabled=entity.is_enabled,
+    sort_order=entity.sort_order,
+    created_at=entity.created_at.isoformat(),
+    updated_at=entity.updated_at.isoformat(),
+    platforms=[dtos.PlatformsResponse(id=p.id, name=p.name) for p in entity.platforms],
+    genres=[dtos.GenreResponse(id=g.id, name=g.name) for g in entity.genres],
+  )
+
+
+def _entity_to_detail_response(entity) -> dtos.GameDetailResponse:
+  return dtos.GameDetailResponse(
     id=entity.id,
     name=entity.name,
     slug=entity.slug,
