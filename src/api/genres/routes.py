@@ -4,8 +4,11 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
+from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
+
+require_admin = get_current_user(required_roles=["admin"])
 
 router = APIRouter(
   prefix="/genres",
@@ -55,7 +58,7 @@ async def get_genre_by_id(id: int, db: AsyncSession = Depends(get_db)):
   summary="Create genre",
   description="Creates a new genre and returns it.",
 )
-async def create_genre(data: dtos.GenreRequest, db: AsyncSession = Depends(get_db)):
+async def create_genre(data: dtos.GenreRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   return await service.create(db, data)
 
 
@@ -70,7 +73,8 @@ async def create_genre(data: dtos.GenreRequest, db: AsyncSession = Depends(get_d
 async def update_genre(
   id: int,
   data: dtos.GenreRequest,
-  db: AsyncSession = Depends(get_db)
+  db: AsyncSession = Depends(get_db),
+  _: dict = Depends(require_admin),
 ):
   genre = await service.update(db, id, data)
 
@@ -89,7 +93,8 @@ async def update_genre(
 )
 async def delete_genre(
   id: int,
-  db: AsyncSession = Depends(get_db)
+  db: AsyncSession = Depends(get_db),
+  _: dict = Depends(require_admin),
 ):
   deleted = await service.delete(db, id)
 

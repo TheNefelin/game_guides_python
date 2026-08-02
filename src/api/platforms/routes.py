@@ -4,8 +4,11 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
+from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
+
+require_admin = get_current_user(required_roles=["admin"])
 
 router = APIRouter(
   prefix="/platforms",
@@ -55,7 +58,7 @@ async def get_platform_by_id(id: int, db: AsyncSession = Depends(get_db)):
   summary="Create platform",
   description="Creates a new platform and returns it.",
 )
-async def create_platform(data: dtos.PlatformsRequest, db: AsyncSession = Depends(get_db)):
+async def create_platform(data: dtos.PlatformsRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   return await service.create(db, data)
 
 
@@ -67,7 +70,7 @@ async def create_platform(data: dtos.PlatformsRequest, db: AsyncSession = Depend
   summary="Update platform",
   description="Updates a platform by its ID. Raises 404 if not found.",
 )
-async def update_platform(id: int, data: dtos.PlatformsRequest, db: AsyncSession = Depends(get_db)):
+async def update_platform(id: int, data: dtos.PlatformsRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   platform = await service.update(db, id, data)
 
   if not platform:
@@ -83,7 +86,7 @@ async def update_platform(id: int, data: dtos.PlatformsRequest, db: AsyncSession
   summary="Delete platform",
   description="Deletes a platform by its ID. Raises 404 if not found.",
 )
-async def delete_platform(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_platform(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   deleted = await service.delete(db, id)
 
   if not deleted:

@@ -4,8 +4,11 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
+from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
+
+require_admin = get_current_user(required_roles=["admin"])
 
 router = APIRouter(
   prefix="/games",
@@ -89,7 +92,7 @@ async def get_game_detail_by_slug(slug: str, db: AsyncSession = Depends(get_db))
   summary="Create game",
   description="Creates a new game with platform and genre relations.",
 )
-async def create_game(data: dtos.GameRequest, db: AsyncSession = Depends(get_db)):
+async def create_game(data: dtos.GameRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   return await service.create(db, data)
 
 
@@ -101,7 +104,7 @@ async def create_game(data: dtos.GameRequest, db: AsyncSession = Depends(get_db)
   summary="Update game",
   description="Updates a game by its ID. Replaces platform/genre relations. Raises 404 if not found.",
 )
-async def update_game(id: int, data: dtos.GameRequest, db: AsyncSession = Depends(get_db)):
+async def update_game(id: int, data: dtos.GameRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   game = await service.update(db, id, data)
 
   if not game:
@@ -121,7 +124,8 @@ async def update_game(id: int, data: dtos.GameRequest, db: AsyncSession = Depend
 async def upload_game_image(
   game_id: int = Form(), 
   file: UploadFile = File(...), 
-  db: AsyncSession = Depends(get_db)
+  db: AsyncSession = Depends(get_db),
+  _: dict = Depends(require_admin),
 ):
   game = await service.upload_image(db, game_id, await file.read())
 
@@ -139,7 +143,7 @@ async def upload_game_image(
   summary="Delete game cover image",
   description="Deletes the cover image of a game from Cloudinary and clears the cover_url field.",
 )
-async def delete_game_image(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_game_image(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   game = await service.delete_image(db, id)
 
   if not game:
@@ -155,7 +159,7 @@ async def delete_game_image(id: int, db: AsyncSession = Depends(get_db)):
   summary="Delete game",
   description="Deletes a game by its ID. Raises 404 if not found.",
 )
-async def delete_game(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_game(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   deleted = await service.delete(db, id)
 
   if not deleted:

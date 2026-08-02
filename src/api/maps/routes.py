@@ -4,8 +4,11 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
+from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
+
+require_admin = get_current_user(required_roles=["admin"])
 
 router = APIRouter(
   prefix="/maps",
@@ -35,6 +38,7 @@ async def create_map(
   file: UploadFile = File(...),
   alt_text: str | None = Form(default=None),
   db: AsyncSession = Depends(get_db),
+  _: dict = Depends(require_admin),
 ):
   return await service.create(db, game_id, await file.read(), alt_text)
 
@@ -45,7 +49,7 @@ async def create_map(
   summary="Delete map image",
   description="Deletes a map image from Cloudinary and removes the record. Raises 404 if not found.",
 )
-async def delete_map_image(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_map_image(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   deleted = await service.delete(db, id)
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Map not found")

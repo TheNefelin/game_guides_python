@@ -4,8 +4,11 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
+from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
+
+require_admin = get_current_user(required_roles=["admin"])
 
 router = APIRouter(
   prefix="/sources",
@@ -62,7 +65,7 @@ async def get_source_by_id(id: int, db: AsyncSession = Depends(get_db)):
   summary="Create source",
   description="Creates a new source and returns it.",
 )
-async def create_source(data: dtos.SourceRequest, db: AsyncSession = Depends(get_db)):
+async def create_source(data: dtos.SourceRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   return await service.create(db, data)
 
 
@@ -73,7 +76,7 @@ async def create_source(data: dtos.SourceRequest, db: AsyncSession = Depends(get
   summary="Update source",
   description="Updates a source by its ID. Raises 404 if not found.",
 )
-async def update_source(id: int, data: dtos.SourceRequest, db: AsyncSession = Depends(get_db)):
+async def update_source(id: int, data: dtos.SourceRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   source = await service.update(db, id, data)
   if not source:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Source not found")
@@ -86,7 +89,7 @@ async def update_source(id: int, data: dtos.SourceRequest, db: AsyncSession = De
   summary="Delete source",
   description="Deletes a source by its ID. Raises 404 if not found.",
 )
-async def delete_source(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_source(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   deleted = await service.delete(db, id)
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Source not found")

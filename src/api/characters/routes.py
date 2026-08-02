@@ -4,8 +4,11 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
+from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
+
+require_admin = get_current_user(required_roles=["admin"])
 
 router = APIRouter(
   prefix="/characters",
@@ -62,7 +65,7 @@ async def get_character_by_id(id: int, db: AsyncSession = Depends(get_db)):
   summary="Create character",
   description="Creates a new character and returns it.",
 )
-async def create_character(data: dtos.CharacterRequest, db: AsyncSession = Depends(get_db)):
+async def create_character(data: dtos.CharacterRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   return await service.create(db, data)
 
 
@@ -73,7 +76,7 @@ async def create_character(data: dtos.CharacterRequest, db: AsyncSession = Depen
   summary="Update character",
   description="Updates a character by its ID. Raises 404 if not found.",
 )
-async def update_character(id: int, data: dtos.CharacterRequest, db: AsyncSession = Depends(get_db)):
+async def update_character(id: int, data: dtos.CharacterRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   character = await service.update(db, id, data)
   if not character:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
@@ -86,7 +89,7 @@ async def update_character(id: int, data: dtos.CharacterRequest, db: AsyncSessio
   summary="Delete character",
   description="Deletes a character by its ID. Raises 404 if not found.",
 )
-async def delete_character(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_character(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   deleted = await service.delete(db, id)
   if not deleted:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
@@ -103,7 +106,8 @@ async def delete_character(id: int, db: AsyncSession = Depends(get_db)):
 async def upload_character_image(
   game_id: int = Form(),
   file: UploadFile = File(...),
-  db: AsyncSession = Depends(get_db)
+  db: AsyncSession = Depends(get_db),
+  _: dict = Depends(require_admin),
 ):
   character = await service.upload_image(db, game_id, await file.read())
   if not character:
@@ -119,7 +123,7 @@ async def upload_character_image(
   summary="Delete character image",
   description="Deletes the image of a character from Cloudinary and clears the image_url field.",
 )
-async def delete_character_image(id: int, db: AsyncSession = Depends(get_db)):
+async def delete_character_image(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
   character = await service.delete_image(db, id)
   if not character:
     raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
