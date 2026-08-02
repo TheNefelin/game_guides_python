@@ -76,8 +76,8 @@ class Game(Base):
 
   platforms: Mapped[list["Platforms"]] = relationship(secondary="gg_game_platforms")
   genres: Mapped[list["Genre"]] = relationship(secondary="gg_game_genres")
-  screenshots: Mapped[list["Screenshot"]] = relationship(back_populates="game", order_by="Screenshot.id")
-  maps: Mapped[list["Map"]] = relationship(back_populates="game", order_by="Map.id")
+  screenshots: Mapped[list["Screenshot"]] = relationship(back_populates="game", order_by="Screenshot.sort_order, Screenshot.id")
+  maps: Mapped[list["Map"]] = relationship(back_populates="game", order_by="Map.sort_order, Map.id")
   characters: Mapped[list["Character"]] = relationship(back_populates="game", order_by="Character.sort_order, Character.name")
   sources: Mapped[list["Source"]] = relationship(back_populates="game", order_by="Source.id")
 
@@ -138,6 +138,7 @@ class Screenshot(Base):
   game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), nullable=False)
   image_url: Mapped[str] = mapped_column(String(512), nullable=False)
   alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   game: Mapped["Game"] = relationship(back_populates="screenshots")
@@ -151,6 +152,7 @@ class Map(Base):
   game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), nullable=False)
   image_url: Mapped[str] = mapped_column(String(512), nullable=False)
   alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   game: Mapped["Game"] = relationship(back_populates="maps")

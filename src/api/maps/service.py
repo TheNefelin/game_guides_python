@@ -10,9 +10,9 @@ async def get_by_game(db: AsyncSession, game_id: int) -> list[dtos.MapResponse]:
   return [dtos.MapResponse.model_validate(e) for e in entities]
 
 
-async def create(db: AsyncSession, game_id: int, file_bytes: bytes, alt_text: str | None = None) -> dtos.MapResponse:
+async def create(db: AsyncSession, game_id: int, file_bytes: bytes, alt_text: str | None = None, sort_order: int = 0) -> dtos.MapResponse:
   image_url, _ = upload_image_free(file_bytes, folder="maps")
-  entity = await repository.create(db, {"game_id": game_id, "image_url": image_url, "alt_text": alt_text})
+  entity = await repository.create(db, {"game_id": game_id, "image_url": image_url, "alt_text": alt_text, "sort_order": sort_order})
   return dtos.MapResponse.model_validate(entity)
 
 

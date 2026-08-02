@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS gg_screenshots (
   game_id    INT NOT NULL REFERENCES gg_games(id),
   image_url  VARCHAR(512) NOT NULL,
   alt_text   VARCHAR(200),
+  sort_order SMALLINT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -150,5 +151,6 @@ CREATE TABLE IF NOT EXISTS gg_maps (
   game_id    INT NOT NULL REFERENCES gg_games(id),
   image_url  VARCHAR(512) NOT NULL,
   alt_text   VARCHAR(200),
+  sort_order SMALLINT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

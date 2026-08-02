@@ -37,10 +37,11 @@ async def create_screenshot(
   game_id: int = Form(),
   file: UploadFile = File(...),
   alt_text: str | None = Form(default=None),
+  sort_order: int = Form(default=0),
   db: AsyncSession = Depends(get_db),
   _: dict = Depends(require_admin),
 ):
-  return await service.create(db, game_id, await file.read(), alt_text)
+  return await service.create(db, game_id, await file.read(), alt_text, sort_order)
 
 
 @router.delete(

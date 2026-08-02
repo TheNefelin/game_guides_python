@@ -142,6 +142,7 @@ class ScreenshotResponse(AppModel):
   game_id: int
   image_url: str
   alt_text: str | None
+  sort_order: int
   created_at: datetime
 
 
@@ -151,5 +152,6 @@ class MapResponse(AppModel):
   game_id: int
   image_url: str
   alt_text: str | None
+  sort_order: int
   created_at: datetime
 

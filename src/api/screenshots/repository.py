@@ -8,7 +8,7 @@ async def get_by_game(db: AsyncSession, game_id: int) -> list[models.Screenshot]
   result = await db.execute(
     select(models.Screenshot)
     .where(models.Screenshot.game_id == game_id)
-    .order_by(models.Screenshot.id)
+    .order_by(models.Screenshot.sort_order, models.Screenshot.id)
   )
   return list(result.scalars().all())
 

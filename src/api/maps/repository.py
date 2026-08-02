@@ -8,7 +8,7 @@ async def get_by_game(db: AsyncSession, game_id: int) -> list[models.Map]:
   result = await db.execute(
     select(models.Map)
     .where(models.Map.game_id == game_id)
-    .order_by(models.Map.id)
+    .order_by(models.Map.sort_order, models.Map.id)
   )
   return list(result.scalars().all())
 

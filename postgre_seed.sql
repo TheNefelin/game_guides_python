@@ -194,90 +194,90 @@ ON CONFLICT DO NOTHING;
 -- ============================================================
 -- Screenshots
 -- ============================================================
-INSERT INTO gg_screenshots (game_id, image_url, alt_text)
-SELECT g.id, s.image_url, s.alt_text FROM gg_games g, (VALUES
+INSERT INTO gg_screenshots (game_id, image_url, alt_text, sort_order)
+SELECT g.id, s.image_url, s.alt_text, s.sort_order FROM gg_games g, (VALUES
   ('chrono-cross',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785105166/screenshots/vxn9oi17pjyelagijzob.webp',
-   'Portada del Juego'),
+   'Portada del Juego', 0),
   ('chrono-cross',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785105199/screenshots/vcxapocm2xnztlklycho.webp',
-   'Todos los Personajes'),
+   'Todos los Personajes', 1),
   ('darksiders-2',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785110631/screenshots/jwix8ewfhgusrj2mqln6.webp',
-   'DarkSiders 2'),
+   'DarkSiders 2', 0),
   ('darksiders-2',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785110637/screenshots/dscqhniygazijdxbonnr.webp',
-   'DarkSiders 2'),
+   'DarkSiders 2', 1),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785191801/screenshots/m2fbneiv9bkqjlhynncg.webp',
-   'Comrades'),
+   'Comrades', 0),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785192711/screenshots/xl5lcyhop1jpleuwlprw.webp',
-   'Comrades'),
+   'Comrades', 1),
   ('final-fantasy-ix',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785286217/screenshots/ntd512i1nwza644bvyiu.webp',
-   'FFIX'),
+   'FFIX', 0),
   ('final-fantasy-ix',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785286236/screenshots/scq82nyygwgnffb2f8gt.webp',
-   'FFIX'),
+   'FFIX', 1),
   ('grand-theft-auto-iii',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785196415/screenshots/otzoj0d6brrynhifplvu.webp',
-   'GTA 3'),
+   'GTA 3', 0),
   ('grand-theft-auto-iii',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785196438/screenshots/nnyp6pmxrptj1mp05hn8.webp',
-   'GTA 3'),
+   'GTA 3', 1),
   ('horizon-zero-dawn',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785274097/screenshots/bocsyt4nwuzzuim4uakb.webp',
-   'Rost'),
+   'Rost', 0),
   ('horizon-zero-dawn',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785274114/screenshots/qqecprtvjwmlnzxx4eqd.webp',
-   'Aloy')
-) AS s(slug, image_url, alt_text)
+   'Aloy', 1)
+) AS s(slug, image_url, alt_text, sort_order)
 WHERE g.slug = s.slug
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
 -- Maps
 -- ============================================================
-INSERT INTO gg_maps (game_id, image_url, alt_text)
-SELECT g.id, m.image_url, m.alt_text FROM gg_games g, (VALUES
+INSERT INTO gg_maps (game_id, image_url, alt_text, sort_order)
+SELECT g.id, m.image_url, m.alt_text, m.sort_order FROM gg_games g, (VALUES
   ('darksiders-2',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785111077/maps/sbywzljtsqtg3odqra50.webp',
-   'The Forge Lands'),
+   'The Forge Lands', 0),
   ('darksiders-2',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785111177/maps/txclq42sqsajdvkv7ge2.webp',
-   'Kingdom of the Dead'),
+   'Kingdom of the Dead', 1),
   ('darksiders-2',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785114557/maps/hvdktzhzrfxu50vpufw8.webp',
-   'Lostlight'),
+   'Lostlight', 2),
   ('darksiders-2',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785114608/maps/s3gzkujoslz5xqdj2osj.webp',
-   'Shadows Edge'),
+   'Shadows Edge', 3),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785193431/maps/kvzdpobttqxfz1yawort.webp',
-   'Lanza - Bigote de Dragón (1)'),
+   'Lanza - Bigote de Dragón (1)', 0),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785193508/maps/a89ruzlxaoasfxi0haex.webp',
-   'Lanza - Bigote de Dragón (2)'),
+   'Lanza - Bigote de Dragón (2)', 1),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785193655/maps/nhtiaob6knkvy6xgm32u.webp',
-   'Martillo - Mjolnir'),
+   'Martillo - Mjolnir', 2),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785193700/maps/l5rnrr6wxzwpeo2ohd6j.webp',
-   'Escudo - Égida'),
+   'Escudo - Égida', 3),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785193740/maps/mxhn4kuopg2eo5vtogd7.webp',
-   'Katana - Mumeito (1)'),
+   'Katana - Mumeito (1)', 4),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785193754/maps/rp2gsazagvkeb34ovtrw.webp',
-   'Katana - Mumeito (2)'),
+   'Katana - Mumeito (2)', 5),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785194218/maps/smiqm8umefkadv4yn7yy.webp',
-   'SET - Físico'),
+   'SET - Físico', 6),
   ('comrades',
    'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785194247/maps/wapyxurvx4uwdgquk3de.webp',
-   'SET - Físico / Mágico')
-) AS m(slug, image_url, alt_text)
+   'SET - Físico / Mágico', 7)
+) AS m(slug, image_url, alt_text, sort_order)
 WHERE g.slug = m.slug
 ON CONFLICT DO NOTHING;
 
