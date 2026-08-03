@@ -3,13 +3,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
-from src.core.dependencies import verify_api_key
+from src.core.dependencies import verify_api_key, require_user
 from src.core.database import get_db
-from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
-
-require_user = get_current_user()
 
 router = APIRouter(
   prefix="/user-guides",

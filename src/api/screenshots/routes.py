@@ -2,13 +2,10 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
-from src.core.dependencies import verify_api_key
+from src.core.dependencies import verify_api_key, require_admin
 from src.core.database import get_db
-from src.core.security import get_current_user
 from src.schemas import dtos
 from . import service
-
-require_admin = get_current_user(required_roles=["admin"])
 
 router = APIRouter(
   prefix="/screenshots",
