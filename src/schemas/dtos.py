@@ -81,8 +81,8 @@ class GameResponse(AppModel):
   rating: int | None
   is_enabled: bool
   sort_order: int
-  created_at: str
-  updated_at: str
+  created_at: datetime
+  updated_at: datetime
   platforms: list[PlatformsResponse]
   genres: list[GenreResponse]
 

@@ -10,7 +10,7 @@ from . import repository
 async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> dtos.PaginationResponse[dtos.GameResponse]:
   total = await repository.count(db)
   entities = await repository.get_all(db, page, limit)
-  items = [_entity_to_response(e) for e in entities]
+  items = [dtos.GameResponse.model_validate(e) for e in entities]
 
   return dtos.PaginationResponse(page=page, limit=limit, total=total, items=items)
 
@@ -22,7 +22,7 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.GameResponse | None:
   if not entity:
     return None
 
-  return _entity_to_response(entity)
+  return dtos.GameResponse.model_validate(entity)
 
 
 # GET DETAIL BY ID -------------------------------------------------
@@ -32,7 +32,7 @@ async def get_detail_by_id(db: AsyncSession, id: int) -> dtos.GameDetailResponse
   if not entity:
     return None
 
-  return _entity_to_detail_response(entity)
+  return dtos.GameDetailResponse.model_validate(entity)
 
 
 # GET DETAIL BY SLUG -----------------------------------------------
@@ -42,7 +42,7 @@ async def get_detail_by_slug(db: AsyncSession, slug: str) -> dtos.GameDetailResp
   if not entity:
     return None
 
-  return _entity_to_detail_response(entity)
+  return dtos.GameDetailResponse.model_validate(entity)
 
 
 # EXISTS BY ID -----------------------------------------------------
@@ -56,7 +56,7 @@ async def create(db: AsyncSession, data: dtos.GameRequest) -> dtos.GameResponse:
     raise DuplicateNameError(data.name)
 
   entity = await repository.create(db, data.model_dump())
-  return _entity_to_response(entity)
+  return dtos.GameResponse.model_validate(entity)
 
 
 # UPDATE ----------------------------------------------------------
@@ -70,7 +70,7 @@ async def update(db: AsyncSession, id: int, data: dtos.GameRequest) -> dtos.Game
     raise DuplicateNameError(data.name)
 
   entity = await repository.update(db, current_entity, data.model_dump())
-  return _entity_to_response(entity)
+  return dtos.GameResponse.model_validate(entity)
 
 
 # DELETE ----------------------------------------------------------
@@ -98,7 +98,7 @@ async def upload_image(db: AsyncSession, id: int, file_bytes: bytes) -> dtos.Gam
 
   cover_url, _ = cloudinary_upload(file_bytes, folder="games")
   entity = await repository.set_cover_url(db, id, cover_url)
-  return _entity_to_response(entity)
+  return dtos.GameResponse.model_validate(entity)
 
 
 # DELETE IMAGE ----------------------------------------------------
@@ -114,45 +114,4 @@ async def delete_image(db: AsyncSession, id: int) -> dtos.GameResponse | None:
       cloudinary_delete(public_id)
 
   entity = await repository.set_cover_url(db, id, None)
-  return _entity_to_response(entity)
-
-
-# HELPERS ---------------------------------------------------------
-def _entity_to_response(entity) -> dtos.GameResponse:
-  return dtos.GameResponse(
-    id=entity.id,
-    name=entity.name,
-    slug=entity.slug,
-    description=entity.description,
-    cover_url=entity.cover_url,
-    release_year=entity.release_year,
-    rating=entity.rating,
-    is_enabled=entity.is_enabled,
-    sort_order=entity.sort_order,
-    created_at=entity.created_at.isoformat(),
-    updated_at=entity.updated_at.isoformat(),
-    platforms=[dtos.PlatformsResponse(id=p.id, name=p.name) for p in entity.platforms],
-    genres=[dtos.GenreResponse(id=g.id, name=g.name) for g in entity.genres],
-  )
-
-
-def _entity_to_detail_response(entity) -> dtos.GameDetailResponse:
-  return dtos.GameDetailResponse(
-    id=entity.id,
-    name=entity.name,
-    slug=entity.slug,
-    description=entity.description,
-    cover_url=entity.cover_url,
-    release_year=entity.release_year,
-    rating=entity.rating,
-    is_enabled=entity.is_enabled,
-    sort_order=entity.sort_order,
-    created_at=entity.created_at.isoformat(),
-    updated_at=entity.updated_at.isoformat(),
-    platforms=[dtos.PlatformsResponse(id=p.id, name=p.name) for p in entity.platforms],
-    genres=[dtos.GenreResponse(id=g.id, name=g.name) for g in entity.genres],
-    screenshots=[dtos.ScreenshotResponse.model_validate(s) for s in entity.screenshots],
-    maps=[dtos.MapResponse.model_validate(m) for m in entity.maps],
-    characters=[dtos.CharacterResponse.model_validate(c) for c in entity.characters],
-    sources=[dtos.SourceResponse.model_validate(s) for s in entity.sources],
-  )
+  return dtos.GameResponse.model_validate(entity)
