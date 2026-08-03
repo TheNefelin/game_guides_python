@@ -16,6 +16,7 @@ class AppModel(BaseModel):
 class PaginationRequest(BaseModel):
   page: int = Field(default=1, ge=1)
   limit: int = Field(default=20, ge=1, le=100)
+  search: str | None = Field(default=None)
 
 
 class PaginationResponse(BaseModel, Generic[T]):

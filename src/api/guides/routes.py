@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query
+from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
@@ -33,12 +34,11 @@ async def get_guides_by_game(game_id: int, db: AsyncSession = Depends(get_db)):
   description="Returns a paginated list of guides, optionally filtered by game_id.",
 )
 async def get_guides(
-  page: int = 1,
-  limit: int = 20,
+  params: Annotated[dtos.PaginationRequest, Depends()],
   game_id: int | None = Query(default=None),
   db: AsyncSession = Depends(get_db),
 ):
-  return await service.get_all(db, page, limit, game_id)
+  return await service.get_all(db, params.page, params.limit, game_id, params.search)
 
 
 @router.get(

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
@@ -23,11 +24,10 @@ router = APIRouter(
   description="Returns a paginated list of genres ordered by name.",
 )
 async def get_all_genres(
-  page: int = 1,
-  limit: int = 20,
+  params: Annotated[dtos.PaginationRequest, Depends()],
   db: AsyncSession = Depends(get_db),
 ):
-  return await service.get_all(db, page, limit)
+  return await service.get_all(db, params.page, params.limit, params.search)
 
 
 # GET BY ID -------------------------------------------------------

@@ -4,10 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import models
 
 
-async def count(db: AsyncSession, game_id: int | None = None) -> int:
+async def count(db: AsyncSession, game_id: int | None = None, search: str | None = None) -> int:
   stmt = select(func.count(models.Character.id))
   if game_id is not None:
     stmt = stmt.where(models.Character.game_id == game_id)
+  if search:
+    stmt = stmt.where(models.Character.name.ilike(f"%{search}%"))
   result = await db.execute(stmt)
   return result.scalar_one()
 
@@ -22,11 +24,13 @@ async def get_by_game(db: AsyncSession, game_id: int) -> list[models.Character]:
   return list(result.scalars().all())
 
 
-async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None) -> list[models.Character]:
+async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None, search: str | None = None) -> list[models.Character]:
   offset = (page - 1) * limit
   stmt = select(models.Character).order_by(models.Character.sort_order, models.Character.name)
   if game_id is not None:
     stmt = stmt.where(models.Character.game_id == game_id)
+  if search:
+    stmt = stmt.where(models.Character.name.ilike(f"%{search}%"))
   result = await db.execute(stmt.offset(offset).limit(limit))
   return list(result.scalars().all())
 

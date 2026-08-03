@@ -5,16 +5,22 @@ from src.models import models
 
 
 # COUNT ----------------------------------------------------------
-async def count(db: AsyncSession) -> int:
-  result = await db.execute(select(func.count(models.Platforms.id)))
+async def count(db: AsyncSession, search: str | None = None) -> int:
+  stmt = select(func.count(models.Platforms.id))
+  if search:
+    stmt = stmt.where(models.Platforms.name.ilike(f"%{search}%"))
+  result = await db.execute(stmt)
   return result.scalar_one()
 
 
 # GET ALL --------------------------------------------------------
-async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> list[models.Platforms]:
+async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, search: str | None = None) -> list[models.Platforms]:
   offset = (page - 1) * limit
+  stmt = select(models.Platforms)
+  if search:
+    stmt = stmt.where(models.Platforms.name.ilike(f"%{search}%"))
   result = await db.execute(
-    select(models.Platforms)
+    stmt
     .order_by(models.Platforms.name)
     .offset(offset)
     .limit(limit)

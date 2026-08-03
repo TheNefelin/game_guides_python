@@ -6,9 +6,9 @@ from . import repository
 
 
 # GET ALL --------------------------------------------------------
-async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> dtos.PaginationResponse[dtos.GenreResponse]:
-  total = await repository.count(db)
-  entities = await repository.get_all(db, page, limit)
+async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, search: str | None = None) -> dtos.PaginationResponse[dtos.GenreResponse]:
+  total = await repository.count(db, search)
+  entities = await repository.get_all(db, page, limit, search)
   items = [dtos.GenreResponse.model_validate(e) for e in entities]
 
   return dtos.PaginationResponse(page=page, limit=limit, total=total, items=items)

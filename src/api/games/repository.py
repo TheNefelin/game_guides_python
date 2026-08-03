@@ -6,16 +6,22 @@ from src.models import models
 
 
 # COUNT ----------------------------------------------------------
-async def count(db: AsyncSession) -> int:
-  result = await db.execute(select(func.count(models.Game.id)))
+async def count(db: AsyncSession, search: str | None = None) -> int:
+  stmt = select(func.count(models.Game.id))
+  if search:
+    stmt = stmt.where(models.Game.name.ilike(f"%{search}%"))
+  result = await db.execute(stmt)
   return result.scalar_one()
 
 
 # GET ALL --------------------------------------------------------
-async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> list[models.Game]:
+async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, search: str | None = None) -> list[models.Game]:
   offset = (page - 1) * limit
+  stmt = select(models.Game)
+  if search:
+    stmt = stmt.where(models.Game.name.ilike(f"%{search}%"))
   result = await db.execute(
-    select(models.Game)
+    stmt
     .options(
       joinedload(models.Game.platforms),
       joinedload(models.Game.genres),
