@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -42,12 +42,7 @@ async def get_all_genres(
   description="Returns a genre by its ID. Raises 404 if not found.",
 )
 async def get_genre_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  genre = await service.get_by_id(db, id)
-
-  if not genre:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Genre not found")
-
-  return genre
+  return await service.get_by_id(db, id)
 
 
 # CREATE ----------------------------------------------------------
@@ -78,9 +73,6 @@ async def update_genre(
 ):
   genre = await service.update(db, id, data)
 
-  if not genre:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Genre not found")
-
   return genre
 
 
@@ -96,7 +88,4 @@ async def delete_genre(
   db: AsyncSession = Depends(get_db),
   _: dict = Depends(require_admin),
 ):
-  deleted = await service.delete(db, id)
-
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Genre not found")
+  await service.delete(db, id)

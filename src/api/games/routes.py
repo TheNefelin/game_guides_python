@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -42,12 +42,7 @@ async def get_games(
   description="Returns a game with its platforms and genres. Raises 404 if not found.",
 )
 async def get_game_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  game = await service.get_by_id(db, id)
-
-  if not game:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
-
-  return game
+  return await service.get_by_id(db, id)
 
 
 # GET DETAIL BY ID ------------------------------------------------
@@ -59,12 +54,7 @@ async def get_game_by_id(id: int, db: AsyncSession = Depends(get_db)):
   description="Returns the full enriched detail of a game with all its relations. Raises 404 if not found.",
 )
 async def get_game_detail_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  game = await service.get_detail_by_id(db, id)
-
-  if not game:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
-
-  return game
+  return await service.get_detail_by_id(db, id)
 
 
 # GET DETAIL BY SLUG ------------------------------------------------
@@ -76,12 +66,7 @@ async def get_game_detail_by_id(id: int, db: AsyncSession = Depends(get_db)):
   description="Returns the full enriched detail of a game matching the slug. Raises 404 if not found.",
 )
 async def get_game_detail_by_slug(slug: str, db: AsyncSession = Depends(get_db)):
-  game = await service.get_detail_by_slug(db, slug)
-
-  if not game:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
-
-  return game
+  return await service.get_detail_by_slug(db, slug)
 
 
 # CREATE ----------------------------------------------------------
@@ -105,12 +90,7 @@ async def create_game(data: dtos.GameRequest, db: AsyncSession = Depends(get_db)
   description="Updates a game by its ID. Replaces platform/genre relations. Raises 404 if not found.",
 )
 async def update_game(id: int, data: dtos.GameRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  game = await service.update(db, id, data)
-
-  if not game:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
-
-  return game
+  return await service.update(db, id, data)
 
 
 # UPLOAD IMAGE ----------------------------------------------------
@@ -128,10 +108,6 @@ async def upload_game_image(
   _: dict = Depends(require_admin),
 ):
   game = await service.upload_image(db, game_id, await file.read())
-
-  if not game:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
-
   return game
 
 
@@ -144,12 +120,7 @@ async def upload_game_image(
   description="Deletes the cover image of a game from Cloudinary and clears the cover_url field.",
 )
 async def delete_game_image(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  game = await service.delete_image(db, id)
-
-  if not game:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
-
-  return game
+  return await service.delete_image(db, id)
 
 
 # DELETE ----------------------------------------------------------
@@ -160,7 +131,4 @@ async def delete_game_image(id: int, db: AsyncSession = Depends(get_db), _: dict
   description="Deletes a game by its ID. Raises 404 if not found.",
 )
 async def delete_game(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  deleted = await service.delete(db, id)
-
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Game not found")
+  await service.delete(db, id)

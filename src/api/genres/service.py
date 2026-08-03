@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
-from src.core.exceptions import DuplicateNameError
+from src.core.exceptions import DuplicateNameError, NotFoundError
 from . import repository
 
 
@@ -15,11 +15,11 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> dtos.Pagi
 
 
 # GET BY ID -------------------------------------------------------
-async def get_by_id(db: AsyncSession, id: int) -> dtos.GenreResponse | None:
+async def get_by_id(db: AsyncSession, id: int) -> dtos.GenreResponse:
   entity = await repository.get_by_id(db, id)
 
   if not entity:
-    return None
+    raise NotFoundError("Genre")
 
   return dtos.GenreResponse.model_validate(entity)
 
@@ -34,11 +34,11 @@ async def create(db: AsyncSession, data: dtos.GenreRequest) -> dtos.GenreRespons
 
 
 # UPDATE ----------------------------------------------------------
-async def update(db: AsyncSession, id: int, data: dtos.GenreRequest) -> dtos.GenreResponse | None:
+async def update(db: AsyncSession, id: int, data: dtos.GenreRequest) -> dtos.GenreResponse:
   current_entity = await repository.get_by_id(db, id)
 
   if not current_entity:
-    return None
+    raise NotFoundError("Genre")
 
   if await repository.exists_by_name(db, data.name):
     raise DuplicateNameError(name=data.name)
@@ -48,11 +48,10 @@ async def update(db: AsyncSession, id: int, data: dtos.GenreRequest) -> dtos.Gen
 
 
 # DELETE ----------------------------------------------------------
-async def delete(db: AsyncSession, id: int) -> bool:
+async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
 
   if not entity:
-    return False
+    raise NotFoundError("Genre")
 
   await repository.delete(db, entity)
-  return True

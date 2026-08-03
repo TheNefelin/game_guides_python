@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
-from src.core.exceptions import DuplicateNameError
+from src.core.exceptions import DuplicateNameError, NotFoundError
 from . import repository
 
 
@@ -15,11 +15,11 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20) -> dtos.Pagi
 
 
 # GET BY ID -------------------------------------------------------
-async def get_by_id(db: AsyncSession, id: int) -> dtos.PlatformsResponse | None:
+async def get_by_id(db: AsyncSession, id: int) -> dtos.PlatformsResponse:
   entity = await repository.get_by_id(db, id)
 
   if not entity:
-    return None
+    raise NotFoundError("Platform")
 
   return dtos.PlatformsResponse.model_validate(entity)
 
@@ -34,11 +34,11 @@ async def create(db: AsyncSession, data: dtos.PlatformsRequest) -> dtos.Platform
 
 
 # UPDATE ----------------------------------------------------------
-async def update(db: AsyncSession, id: int, data: dtos.PlatformsRequest) -> dtos.PlatformsResponse | None:
+async def update(db: AsyncSession, id: int, data: dtos.PlatformsRequest) -> dtos.PlatformsResponse:
   current_entity = await repository.get_by_id(db, id)
 
   if not current_entity:
-    return None
+    raise NotFoundError("Platform")
 
   if await repository.exists_by_name(db, data.name):
     raise DuplicateNameError(data.name)
@@ -48,11 +48,10 @@ async def update(db: AsyncSession, id: int, data: dtos.PlatformsRequest) -> dtos
 
 
 # DELETE ----------------------------------------------------------
-async def delete(db: AsyncSession, id: int) -> bool:
+async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
 
   if not entity:
-    return False
+    raise NotFoundError("Platform")
 
   await repository.delete(db, entity)
-  return True

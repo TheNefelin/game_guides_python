@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
+from src.core.exceptions import NotFoundError
 from src.core.cloudinary import upload_image_16_9, delete_image as cloudinary_delete, extract_public_id
 from . import repository
 
@@ -16,13 +17,12 @@ async def create(db: AsyncSession, game_id: int, file_bytes: bytes, alt_text: st
   return dtos.ScreenshotResponse.model_validate(entity)
 
 
-async def delete(db: AsyncSession, id: int) -> bool:
+async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
   if not entity:
-    return False
+    raise NotFoundError("Screenshot")
   if entity.image_url:
     public_id = extract_public_id(entity.image_url)
     if public_id:
       cloudinary_delete(public_id)
   await repository.delete(db, entity)
-  return True

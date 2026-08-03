@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -52,10 +52,7 @@ async def get_guides(
   description="Returns a guide by its ID. Raises 404 if not found.",
 )
 async def get_guide_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  guide = await service.get_by_id(db, id)
-  if not guide:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Guide not found")
-  return guide
+  return await service.get_by_id(db, id)
 
 
 @router.post(
@@ -77,10 +74,7 @@ async def create_guide(data: dtos.GuideRequest, db: AsyncSession = Depends(get_d
   description="Updates a guide by its ID. Raises 404 if not found.",
 )
 async def update_guide(id: int, data: dtos.GuideRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  guide = await service.update(db, id, data)
-  if not guide:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Guide not found")
-  return guide
+  return await service.update(db, id, data)
 
 
 @router.delete(
@@ -90,6 +84,4 @@ async def update_guide(id: int, data: dtos.GuideRequest, db: AsyncSession = Depe
   description="Deletes a guide by its ID. Raises 404 if not found.",
 )
 async def delete_guide(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  deleted = await service.delete(db, id)
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Guide not found")
+  await service.delete(db, id)

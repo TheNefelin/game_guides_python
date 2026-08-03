@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -52,10 +52,7 @@ async def get_sources(
   description="Returns a source by its ID. Raises 404 if not found.",
 )
 async def get_source_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  source = await service.get_by_id(db, id)
-  if not source:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Source not found")
-  return source
+  return await service.get_by_id(db, id)
 
 
 @router.post(
@@ -77,10 +74,7 @@ async def create_source(data: dtos.SourceRequest, db: AsyncSession = Depends(get
   description="Updates a source by its ID. Raises 404 if not found.",
 )
 async def update_source(id: int, data: dtos.SourceRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  source = await service.update(db, id, data)
-  if not source:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Source not found")
-  return source
+  return await service.update(db, id, data)
 
 
 @router.delete(
@@ -90,6 +84,4 @@ async def update_source(id: int, data: dtos.SourceRequest, db: AsyncSession = De
   description="Deletes a source by its ID. Raises 404 if not found.",
 )
 async def delete_source(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  deleted = await service.delete(db, id)
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Source not found")
+  await service.delete(db, id)

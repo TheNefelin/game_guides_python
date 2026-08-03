@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -42,12 +42,7 @@ async def get_platforms(
   description="Returns a platform by its ID. Raises 404 if not found.",
 )
 async def get_platform_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  platform = await service.get_by_id(db, id)
-
-  if not platform:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Platform not found")
-
-  return platform
+  return await service.get_by_id(db, id)
 
 
 # CREATE ----------------------------------------------------------
@@ -71,12 +66,7 @@ async def create_platform(data: dtos.PlatformsRequest, db: AsyncSession = Depend
   description="Updates a platform by its ID. Raises 404 if not found.",
 )
 async def update_platform(id: int, data: dtos.PlatformsRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  platform = await service.update(db, id, data)
-
-  if not platform:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Platform not found")
-
-  return platform
+  return await service.update(db, id, data)
 
 
 # DELETE ----------------------------------------------------------
@@ -87,7 +77,4 @@ async def update_platform(id: int, data: dtos.PlatformsRequest, db: AsyncSession
   description="Deletes a platform by its ID. Raises 404 if not found.",
 )
 async def delete_platform(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  deleted = await service.delete(db, id)
-
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Platform not found")
+  await service.delete(db, id)

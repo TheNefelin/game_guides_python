@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -55,6 +55,4 @@ async def delete_screenshot_image(
   db: AsyncSession = Depends(get_db),
   _: dict = Depends(require_admin),
 ):
-  deleted = await service.delete(db, id)
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Screenshot not found")
+  await service.delete(db, id)

@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -52,10 +52,7 @@ async def get_characters(
   description="Returns a character by its ID. Raises 404 if not found.",
 )
 async def get_character_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  character = await service.get_by_id(db, id)
-  if not character:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
-  return character
+  return await service.get_by_id(db, id)
 
 
 @router.post(
@@ -77,10 +74,7 @@ async def create_character(data: dtos.CharacterRequest, db: AsyncSession = Depen
   description="Updates a character by its ID. Raises 404 if not found.",
 )
 async def update_character(id: int, data: dtos.CharacterRequest, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  character = await service.update(db, id, data)
-  if not character:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
-  return character
+  return await service.update(db, id, data)
 
 
 @router.delete(
@@ -90,9 +84,7 @@ async def update_character(id: int, data: dtos.CharacterRequest, db: AsyncSessio
   description="Deletes a character by its ID. Raises 404 if not found.",
 )
 async def delete_character(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  deleted = await service.delete(db, id)
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
+  await service.delete(db, id)
 
 
 # UPLOAD IMAGE ----------------------------------------------------
@@ -110,8 +102,6 @@ async def upload_character_image(
   _: dict = Depends(require_admin),
 ):
   character = await service.upload_image(db, game_id, await file.read())
-  if not character:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
   return character
 
 
@@ -124,7 +114,4 @@ async def upload_character_image(
   description="Deletes the image of a character from Cloudinary and clears the image_url field.",
 )
 async def delete_character_image(id: int, db: AsyncSession = Depends(get_db), _: dict = Depends(require_admin)):
-  character = await service.delete_image(db, id)
-  if not character:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Character not found")
-  return character
+  return await service.delete_image(db, id)

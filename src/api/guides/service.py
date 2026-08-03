@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
-from src.core.exceptions import AppError
+from src.core.exceptions import AppError, NotFoundError
 from src.api.games import service as games_service
 from . import repository
 
@@ -23,10 +23,10 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int
   return dtos.PaginationResponse(page=page, limit=limit, total=total, items=items)
 
 
-async def get_by_id(db: AsyncSession, id: int) -> dtos.GuideResponse | None:
+async def get_by_id(db: AsyncSession, id: int) -> dtos.GuideResponse:
   entity = await repository.get_by_id(db, id)
   if not entity:
-    return None
+    raise NotFoundError("Guide")
   return dtos.GuideResponse.model_validate(entity)
 
 
@@ -36,18 +36,17 @@ async def create(db: AsyncSession, data: dtos.GuideRequest) -> dtos.GuideRespons
   return dtos.GuideResponse.model_validate(entity)
 
 
-async def update(db: AsyncSession, id: int, data: dtos.GuideRequest) -> dtos.GuideResponse | None:
+async def update(db: AsyncSession, id: int, data: dtos.GuideRequest) -> dtos.GuideResponse:
   current = await repository.get_by_id(db, id)
   if not current:
-    return None
+    raise NotFoundError("Guide")
   await _ensure_game_exists(db, data.game_id)
   entity = await repository.update(db, current, data.model_dump())
   return dtos.GuideResponse.model_validate(entity)
 
 
-async def delete(db: AsyncSession, id: int) -> bool:
+async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
   if not entity:
-    return False
+    raise NotFoundError("Guide")
   await repository.delete(db, entity)
-  return True
