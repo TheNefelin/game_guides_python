@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas import dtos
 from src.core.exceptions import DuplicateNameError, NotFoundError
 from src.core.cloudinary import upload_image_1_1, delete_image as cloudinary_delete, extract_public_id
+from src.api.games import service as games_service
 from . import repository
 
 
@@ -26,6 +27,7 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.CharacterResponse:
 
 
 async def create(db: AsyncSession, data: dtos.CharacterRequest) -> dtos.CharacterResponse:
+  await games_service.ensure_game_exists(db, data.game_id)
   if await repository.exists_by_name(db, data.name, data.game_id):
     raise DuplicateNameError(data.name)
   if await repository.exists_by_slug(db, data.slug, data.game_id):
@@ -38,6 +40,7 @@ async def update(db: AsyncSession, id: int, data: dtos.CharacterRequest) -> dtos
   current = await repository.get_by_id(db, id)
   if not current:
     raise NotFoundError("Character")
+  await games_service.ensure_game_exists(db, data.game_id)
   if await repository.exists_by_name(db, data.name, data.game_id, exclude_id=id):
     raise DuplicateNameError(data.name)
   if await repository.exists_by_slug(db, data.slug, data.game_id, exclude_id=id):

@@ -1,9 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
-from src.core.exceptions import DuplicateNameError, NotFoundError
+from src.core.exceptions import AppError, DuplicateNameError, NotFoundError
 from src.core.cloudinary import upload_image_1_1 as cloudinary_upload, delete_image as cloudinary_delete, extract_public_id
 from . import repository
+
+
+# VALIDATION ------------------------------------------------------
+async def ensure_game_exists(db: AsyncSession, game_id: int) -> None:
+  if not await repository.exists_by_id(db, game_id):
+    raise AppError(f"Game with id {game_id} does not exist")
 
 
 # GET ALL --------------------------------------------------------
@@ -45,11 +51,6 @@ async def get_detail_by_slug(db: AsyncSession, slug: str) -> dtos.GameDetailResp
   return dtos.GameDetailResponse.model_validate(entity)
 
 
-# EXISTS BY ID -----------------------------------------------------
-async def exists(db: AsyncSession, id: int) -> bool:
-  return await repository.exists_by_id(db, id)
-
-
 # CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, data: dtos.GameRequest) -> dtos.GameResponse:
   if await repository.exists_by_name(db, data.name):
@@ -79,6 +80,12 @@ async def delete(db: AsyncSession, id: int) -> None:
 
   if not entity:
     raise NotFoundError("Game")
+
+  deps = await repository.dependency_counts(db, id)
+  active = {k: v for k, v in deps.items() if v > 0}
+  if active:
+    names = ", ".join(f"{k} ({v})" for k, v in active.items())
+    raise AppError(f"Cannot delete game with id {id}: it has dependencies: {names}")
 
   await repository.delete(db, entity)
 

@@ -1,14 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
-from src.core.exceptions import AppError, NotFoundError
+from src.core.exceptions import NotFoundError
 from src.api.games import service as games_service
 from . import repository
-
-
-async def _ensure_game_exists(db: AsyncSession, game_id: int) -> None:
-  if not await games_service.exists(db, game_id):
-    raise AppError(f"Game with id {game_id} does not exist")
 
 
 async def get_by_game(db: AsyncSession, game_id: int) -> list[dtos.GuideResponse]:
@@ -31,7 +26,7 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.GuideResponse:
 
 
 async def create(db: AsyncSession, data: dtos.GuideRequest) -> dtos.GuideResponse:
-  await _ensure_game_exists(db, data.game_id)
+  await games_service.ensure_game_exists(db, data.game_id)
   entity = await repository.create(db, data.model_dump())
   return dtos.GuideResponse.model_validate(entity)
 
@@ -40,7 +35,7 @@ async def update(db: AsyncSession, id: int, data: dtos.GuideRequest) -> dtos.Gui
   current = await repository.get_by_id(db, id)
   if not current:
     raise NotFoundError("Guide")
-  await _ensure_game_exists(db, data.game_id)
+  await games_service.ensure_game_exists(db, data.game_id)
   entity = await repository.update(db, current, data.model_dump())
   return dtos.GuideResponse.model_validate(entity)
 

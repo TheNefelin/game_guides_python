@@ -40,6 +40,16 @@ async def exists_by_id(db: AsyncSession, id: int) -> bool:
   return result.scalar_one()
 
 
+# DEPENDENCIES ----------------------------------------------------
+async def dependency_counts(db: AsyncSession, game_id: int) -> dict[str, int]:
+  result = {}
+  for model in (models.Character, models.Source, models.Screenshot, models.Map, models.Guide):
+    name = model.__tablename__.replace("gg_", "")
+    stmt = select(func.count(model.id)).where(model.game_id == game_id)
+    result[name] = (await db.execute(stmt)).scalar_one()
+  return result
+
+
 # GET BY ID -------------------------------------------------------
 async def get_by_id(db: AsyncSession, id: int) -> models.Game | None:
   result = await db.execute(

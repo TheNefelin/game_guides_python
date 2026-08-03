@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
 from src.core.exceptions import DuplicateNameError, NotFoundError
+from src.api.games import service as games_service
 from . import repository
 
 
@@ -25,6 +26,7 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.SourceResponse:
 
 
 async def create(db: AsyncSession, data: dtos.SourceRequest) -> dtos.SourceResponse:
+  await games_service.ensure_game_exists(db, data.game_id)
   if await repository.exists_by_name(db, data.name, data.game_id):
     raise DuplicateNameError(data.name)
   entity = await repository.create(db, data.model_dump())
@@ -35,6 +37,7 @@ async def update(db: AsyncSession, id: int, data: dtos.SourceRequest) -> dtos.So
   current = await repository.get_by_id(db, id)
   if not current:
     raise NotFoundError("Source")
+  await games_service.ensure_game_exists(db, data.game_id)
   if await repository.exists_by_name(db, data.name, data.game_id):
     raise DuplicateNameError(data.name)
   entity = await repository.update(db, current, data.model_dump())

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas import dtos
 from src.core.exceptions import NotFoundError
 from src.core.cloudinary import upload_image_free, delete_image as cloudinary_delete, extract_public_id
+from src.api.games import service as games_service
 from . import repository
 
 
@@ -12,6 +13,7 @@ async def get_by_game(db: AsyncSession, game_id: int) -> list[dtos.MapResponse]:
 
 
 async def create(db: AsyncSession, game_id: int, file_bytes: bytes, alt_text: str | None = None, sort_order: int = 0) -> dtos.MapResponse:
+  await games_service.ensure_game_exists(db, game_id)
   image_url, _ = upload_image_free(file_bytes, folder="maps")
   entity = await repository.create(db, {"game_id": game_id, "image_url": image_url, "alt_text": alt_text, "sort_order": sort_order})
   return dtos.MapResponse.model_validate(entity)
