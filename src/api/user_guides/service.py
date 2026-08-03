@@ -18,9 +18,8 @@ async def create(db: AsyncSession, user_id: UUID, guide_id: int) -> dtos.UserGui
   return dtos.UserGuideResponse.model_validate(entity)
 
 
-async def delete(db: AsyncSession, user_id: UUID, guide_id: int) -> bool:
+async def delete(db: AsyncSession, user_id: UUID, guide_id: int) -> None:
   entity = await repository.get_by_id(db, user_id, guide_id)
   if not entity:
-    return False
+    raise NotFoundError("User guide")
   await repository.uncheck(db, entity)
-  return True

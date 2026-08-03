@@ -1,7 +1,7 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key
 from src.core.database import get_db
@@ -63,6 +63,4 @@ async def delete_user_guide(
   user_id: UUID = Depends(get_user_id),
   db: AsyncSession = Depends(get_db),
 ):
-  deleted = await service.delete(db, user_id, guide_id)
-  if not deleted:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User guide not found")
+  await service.delete(db, user_id, guide_id)
