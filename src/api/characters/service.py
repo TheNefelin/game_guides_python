@@ -53,6 +53,10 @@ async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
   if not entity:
     raise NotFoundError("Character")
+  if entity.image_url:
+    public_id = extract_public_id(entity.image_url)
+    if public_id:
+      cloudinary_delete(public_id)
   await repository.delete(db, entity)
 
 

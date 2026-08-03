@@ -87,6 +87,11 @@ async def delete(db: AsyncSession, id: int) -> None:
     names = ", ".join(f"{k} ({v})" for k, v in active.items())
     raise AppError(f"Cannot delete game with id {id}: it has dependencies: {names}")
 
+  if entity.cover_url:
+    public_id = extract_public_id(entity.cover_url)
+    if public_id:
+      cloudinary_delete(public_id)
+
   await repository.delete(db, entity)
 
 

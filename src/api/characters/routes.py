@@ -93,12 +93,12 @@ async def delete_character(id: int, db: AsyncSession = Depends(get_db), _: dict 
   description="Uploads a square image for a character. Deletes the previous image if it exists.",
 )
 async def upload_character_image(
-  game_id: int = Form(),
+  id: int = Form(),
   file: UploadFile = File(...),
   db: AsyncSession = Depends(get_db),
   _: dict = Depends(require_admin),
 ):
-  character = await service.upload_image(db, game_id, await file.read())
+  character = await service.upload_image(db, id, await file.read())
   return character
 
 
