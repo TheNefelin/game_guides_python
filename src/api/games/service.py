@@ -45,6 +45,11 @@ async def get_detail_by_slug(db: AsyncSession, slug: str) -> dtos.GameDetailResp
   return _entity_to_detail_response(entity)
 
 
+# EXISTS BY ID -----------------------------------------------------
+async def exists(db: AsyncSession, id: int) -> bool:
+  return await repository.exists_by_id(db, id)
+
+
 # CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, data: dtos.GameRequest) -> dtos.GameResponse:
   if await repository.exists_by_name(db, data.name):

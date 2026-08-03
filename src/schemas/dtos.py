@@ -155,3 +155,34 @@ class MapResponse(AppModel):
   sort_order: int
   created_at: datetime
 
+
+# USER GUIDES ------------------------------------------------------
+class UserGuideRequest(BaseModel):
+  guide_id: int = Field(ge=1)
+
+
+class UserGuideResponse(AppModel):
+  guide_id: int
+  is_completed: bool
+  completed_at: datetime | None
+
+
+# GUIDES -----------------------------------------------------------
+class GuideRequest(BaseModel):
+  game_id: int
+  title: str = Field(min_length=1, max_length=200)
+  summary: str | None = None
+  sort_order: int = 0
+  is_enabled: bool = True
+
+
+class GuideResponse(AppModel):
+  id: int
+  game_id: int
+  title: str
+  summary: str | None
+  sort_order: int
+  is_enabled: bool
+  created_at: datetime
+  updated_at: datetime
+

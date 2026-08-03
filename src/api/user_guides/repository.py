@@ -1,0 +1,59 @@
+from uuid import UUID
+from datetime import datetime, timezone
+from sqlalchemy import select, exists
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.models import models
+
+
+async def get_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> list[models.UserGuide]:
+  stmt = (
+    select(models.UserGuide)
+    .join(models.Guide, models.Guide.id == models.UserGuide.guide_id)
+    .where(models.UserGuide.user_id == user_id, models.Guide.game_id == game_id)
+    .order_by(models.Guide.sort_order, models.Guide.id)
+  )
+  result = await db.execute(stmt)
+  return list(result.scalars().all())
+
+
+async def get_by_id(db: AsyncSession, user_id: UUID, guide_id: int) -> models.UserGuide | None:
+  stmt = (
+    select(models.UserGuide)
+    .where(models.UserGuide.user_id == user_id, models.UserGuide.guide_id == guide_id)
+  )
+  result = await db.execute(stmt)
+  return result.scalar_one_or_none()
+
+
+async def guide_exists(db: AsyncSession, guide_id: int) -> bool:
+  stmt = select(exists().where(models.Guide.id == guide_id))
+  result = await db.execute(stmt)
+  return result.scalar_one()
+
+
+async def upsert(db: AsyncSession, user_id: UUID, guide_id: int) -> models.UserGuide:
+  item = await get_by_id(db, user_id, guide_id)
+  now = datetime.now(timezone.utc)
+  if item:
+    item.is_completed = True
+    item.completed_at = now
+  else:
+    item = models.UserGuide(
+      user_id=user_id,
+      guide_id=guide_id,
+      is_completed=True,
+      completed_at=now,
+    )
+    db.add(item)
+  await db.commit()
+  await db.refresh(item)
+  return item
+
+
+async def uncheck(db: AsyncSession, item: models.UserGuide) -> models.UserGuide:
+  item.is_completed = False
+  item.completed_at = None
+  await db.commit()
+  await db.refresh(item)
+  return item

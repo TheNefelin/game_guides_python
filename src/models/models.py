@@ -80,6 +80,7 @@ class Game(Base):
   maps: Mapped[list["Map"]] = relationship(back_populates="game", order_by="Map.sort_order, Map.id")
   characters: Mapped[list["Character"]] = relationship(back_populates="game", order_by="Character.sort_order, Character.name")
   sources: Mapped[list["Source"]] = relationship(back_populates="game", order_by="Source.id")
+  guides: Mapped[list["Guide"]] = relationship(back_populates="game", order_by="Guide.sort_order, Guide.id")
 
 
 # ASSOCIATION TABLES ----------------------------------------------------
@@ -156,4 +157,31 @@ class Map(Base):
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   game: Mapped["Game"] = relationship(back_populates="maps")
+
+
+# GUIDES -----------------------------------------------------------------
+class Guide(Base):
+  __tablename__ = 'gg_guides'
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  game_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_games.id"), nullable=False)
+  title: Mapped[str] = mapped_column(String(200), nullable=False)
+  summary: Mapped[str | None] = mapped_column(String(500), nullable=True)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
+  is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+  updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+  game: Mapped["Game"] = relationship(back_populates="guides")
+
+
+# USER GUIDES (progreso del usuario por guía) ----------------------------
+class UserGuide(Base):
+  __tablename__ = 'gg_user_guides'
+
+  user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey("gg_users.id"), primary_key=True)
+  guide_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_guides.id"), primary_key=True)
+  is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+  completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+  updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
