@@ -157,17 +157,6 @@ class MapResponse(AppModel):
   created_at: datetime
 
 
-# USER GUIDES ------------------------------------------------------
-class UserGuideRequest(BaseModel):
-  guide_id: int = Field(ge=1)
-
-
-class UserGuideResponse(AppModel):
-  guide_id: int
-  is_completed: bool
-  completed_at: datetime | None
-
-
 # GUIDES -----------------------------------------------------------
 class GuideRequest(BaseModel):
   game_id: int
@@ -186,6 +175,9 @@ class GuideResponse(AppModel):
   is_enabled: bool
   created_at: datetime
   updated_at: datetime
+
+class GuideDetailResponse(GuideResponse):
+  adventures: list[AdventureResponse]
 
 
 # ADVENTURES --------------------------------------------------------
@@ -216,6 +208,17 @@ class AdventureImageResponse(AppModel):
   alt_text: str | None
   sort_order: int
   created_at: datetime
+
+
+# USER GUIDES ------------------------------------------------------
+class UserGuideRequest(BaseModel):
+  guide_id: int = Field(ge=1)
+
+
+class UserGuideResponse(AppModel):
+  guide_id: int
+  is_completed: bool
+  completed_at: datetime | None
 
 
 # USER ADVENTURES ---------------------------------------------------

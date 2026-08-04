@@ -173,7 +173,7 @@ class Guide(Base):
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   game: Mapped["Game"] = relationship(back_populates="guides")
-  adventures: Mapped[list["Adventure"]] = relationship(back_populates="guide")
+  adventures: Mapped[list["Adventure"]] = relationship(back_populates="guide", order_by="Adventure.sort_order, Adventure.id")
 
 
 # USER GUIDES (progreso del usuario por guía) ----------------------------

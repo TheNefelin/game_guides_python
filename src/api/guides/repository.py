@@ -1,4 +1,5 @@
 from sqlalchemy import select, func, exists
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import models
@@ -37,6 +38,15 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int
 
 async def get_by_id(db: AsyncSession, id: int) -> models.Guide | None:
   result = await db.execute(select(models.Guide).where(models.Guide.id == id))
+  return result.scalar_one_or_none()
+
+
+async def get_detail_by_id(db: AsyncSession, id: int) -> models.Guide | None:
+  result = await db.execute(
+    select(models.Guide)
+    .options(selectinload(models.Guide.adventures))
+    .where(models.Guide.id == id)
+  )
   return result.scalar_one_or_none()
 
 

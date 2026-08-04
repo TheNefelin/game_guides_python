@@ -31,6 +31,13 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.GuideResponse:
   return dtos.GuideResponse.model_validate(entity)
 
 
+async def get_detail_by_id(db: AsyncSession, id: int) -> dtos.GuideDetailResponse:
+  entity = await repository.get_detail_by_id(db, id)
+  if not entity:
+    raise NotFoundError("Guide")
+  return dtos.GuideDetailResponse.model_validate(entity)
+
+
 async def create(db: AsyncSession, data: dtos.GuideRequest) -> dtos.GuideResponse:
   await games_service.ensure_game_exists(db, data.game_id)
   entity = await repository.create(db, data.model_dump())
