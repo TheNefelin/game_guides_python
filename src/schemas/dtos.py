@@ -187,3 +187,44 @@ class GuideResponse(AppModel):
   created_at: datetime
   updated_at: datetime
 
+
+# ADVENTURES --------------------------------------------------------
+class AdventureRequest(BaseModel):
+  guide_id: int
+  description: str = Field(min_length=1)
+  is_important: bool = False
+  is_optional: bool = False
+  sort_order: int = 0
+
+
+class AdventureResponse(AppModel):
+  id: int
+  guide_id: int
+  description: str
+  is_important: bool
+  is_optional: bool
+  sort_order: int
+  created_at: datetime
+  updated_at: datetime
+
+
+# ADVENTURE IMAGES --------------------------------------------------
+class AdventureImageResponse(AppModel):
+  id: int
+  adventure_id: int
+  image_url: str
+  alt_text: str | None
+  sort_order: int
+  created_at: datetime
+
+
+# USER ADVENTURES ---------------------------------------------------
+class UserAdventureRequest(BaseModel):
+  adventure_id: int = Field(ge=1)
+
+
+class UserAdventureResponse(AppModel):
+  adventure_id: int
+  is_completed: bool
+  completed_at: datetime | None
+

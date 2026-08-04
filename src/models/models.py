@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, Float, Boolean, ForeignKey, DateTime, func
+from sqlalchemy import String, Integer, Float, Boolean, ForeignKey, DateTime, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -173,6 +173,7 @@ class Guide(Base):
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   game: Mapped["Game"] = relationship(back_populates="guides")
+  adventures: Mapped[list["Adventure"]] = relationship(back_populates="guide")
 
 
 # USER GUIDES (progreso del usuario por guía) ----------------------------
@@ -181,6 +182,48 @@ class UserGuide(Base):
 
   user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey("gg_users.id"), primary_key=True)
   guide_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_guides.id"), primary_key=True)
+  is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+  completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+  updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+# ADVENTURES (pasos de una guía) -----------------------------------------
+class Adventure(Base):
+  __tablename__ = 'gg_adventures'
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  guide_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_guides.id"), nullable=False)
+  description: Mapped[str] = mapped_column(Text, nullable=False)
+  is_important: Mapped[bool] = mapped_column(Boolean, default=False)
+  is_optional: Mapped[bool] = mapped_column(Boolean, default=False)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+  updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+  guide: Mapped["Guide"] = relationship(back_populates="adventures")
+  images: Mapped[list["AdventureImage"]] = relationship(back_populates="adventure", cascade="all, delete-orphan")
+
+
+# ADVENTURE IMAGES (imágenes de un adventure) ----------------------------
+class AdventureImage(Base):
+  __tablename__ = 'gg_adventure_images'
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+  adventure_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_adventures.id"), nullable=False)
+  image_url: Mapped[str] = mapped_column(String(512), nullable=False)
+  alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
+  sort_order: Mapped[int] = mapped_column(Integer, default=0)
+  created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+  adventure: Mapped["Adventure"] = relationship(back_populates="images")
+
+
+# USER ADVENTURES (progreso del usuario por adventure) -------------------
+class UserAdventure(Base):
+  __tablename__ = 'gg_user_adventures'
+
+  user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey("gg_users.id"), primary_key=True)
+  adventure_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_adventures.id"), primary_key=True)
   is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
   completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

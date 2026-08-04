@@ -1,9 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
-from src.core.exceptions import NotFoundError
+from src.core.exceptions import AppError, NotFoundError
 from src.api.games import service as games_service
 from . import repository
+
+
+# VALIDATION ------------------------------------------------------
+async def ensure_guide_exists(db: AsyncSession, guide_id: int) -> None:
+  if not await repository.exists_by_id(db, guide_id):
+    raise AppError(f"Guide with id {guide_id} does not exist")
 
 
 async def get_by_game(db: AsyncSession, game_id: int) -> list[dtos.GuideResponse]:

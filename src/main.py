@@ -23,6 +23,9 @@ from src.api.screenshots.routes import router as screenshots_router
 from src.api.maps.routes import router as maps_router
 from src.api.guides.routes import router as guides_router
 from src.api.user_guides.routes import router as user_guides_router
+from src.api.adventures.routes import router as adventures_router
+from src.api.adventure_images.routes import router as adventure_images_router
+from src.api.user_adventures.routes import router as user_adventures_router
 
 start_time = time.time()
 
@@ -97,3 +100,6 @@ app.include_router(screenshots_router, prefix="/api")
 app.include_router(maps_router, prefix="/api")
 app.include_router(guides_router, prefix="/api")
 app.include_router(user_guides_router, prefix="/api")
+app.include_router(adventures_router, prefix="/api")
+app.include_router(adventure_images_router, prefix="/api")
+app.include_router(user_adventures_router, prefix="/api")
