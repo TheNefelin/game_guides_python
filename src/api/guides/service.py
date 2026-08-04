@@ -24,18 +24,18 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int
   return dtos.PaginationResponse(page=page, limit=limit, total=total, items=items)
 
 
+async def get_detail_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None, search: str | None = None) -> dtos.PaginationResponse[dtos.GuideDetailResponse]:
+  total = await repository.count(db, game_id, search)
+  entities = await repository.get_all_with_adventures(db, page, limit, game_id, search)
+  items = [dtos.GuideDetailResponse.model_validate(e) for e in entities]
+  return dtos.PaginationResponse(page=page, limit=limit, total=total, items=items)
+
+
 async def get_by_id(db: AsyncSession, id: int) -> dtos.GuideResponse:
   entity = await repository.get_by_id(db, id)
   if not entity:
     raise NotFoundError("Guide")
   return dtos.GuideResponse.model_validate(entity)
-
-
-async def get_detail_by_id(db: AsyncSession, id: int) -> dtos.GuideDetailResponse:
-  entity = await repository.get_detail_by_id(db, id)
-  if not entity:
-    raise NotFoundError("Guide")
-  return dtos.GuideDetailResponse.model_validate(entity)
 
 
 async def create(db: AsyncSession, data: dtos.GuideRequest) -> dtos.GuideResponse:

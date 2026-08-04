@@ -42,6 +42,21 @@ async def get_guides(
 
 
 @router.get(
+  "/detail",
+  response_model=dtos.PaginationResponse[dtos.GuideDetailResponse],
+  status_code=HTTP_200_OK,
+  summary="Get all guides with adventures",
+  description="Returns a paginated list of guides with their nested adventures, optionally filtered by game_id.",
+)
+async def get_guides_detail(
+  params: Annotated[dtos.PaginationRequest, Depends()],
+  game_id: int | None = Query(default=None),
+  db: AsyncSession = Depends(get_db),
+):
+  return await service.get_detail_all(db, params.page, params.limit, game_id, params.search)
+
+
+@router.get(
   "/{id}",
   response_model=dtos.GuideResponse,
   status_code=HTTP_200_OK,
@@ -50,17 +65,6 @@ async def get_guides(
 )
 async def get_guide_by_id(id: int, db: AsyncSession = Depends(get_db)):
   return await service.get_by_id(db, id)
-
-
-@router.get(
-  "/{id}/detail",
-  response_model=dtos.GuideDetailResponse,
-  status_code=HTTP_200_OK,
-  summary="Get guide detail by ID",
-  description="Returns the full enriched detail of a guide with its adventures. Raises 404 if not found.",
-)
-async def get_guide_detail_by_id(id: int, db: AsyncSession = Depends(get_db)):
-  return await service.get_detail_by_id(db, id)
 
 
 @router.post(

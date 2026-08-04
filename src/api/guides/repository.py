@@ -36,17 +36,19 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int
   return list(result.scalars().all())
 
 
+async def get_all_with_adventures(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None, search: str | None = None) -> list[models.Guide]:
+  offset = (page - 1) * limit
+  stmt = select(models.Guide).options(selectinload(models.Guide.adventures))
+  if game_id is not None:
+    stmt = stmt.where(models.Guide.game_id == game_id)
+  if search:
+    stmt = stmt.where(models.Guide.title.ilike(f"%{search}%"))
+  result = await db.execute(stmt.order_by(models.Guide.sort_order, models.Guide.id).offset(offset).limit(limit))
+  return list(result.scalars().all())
+
+
 async def get_by_id(db: AsyncSession, id: int) -> models.Guide | None:
   result = await db.execute(select(models.Guide).where(models.Guide.id == id))
-  return result.scalar_one_or_none()
-
-
-async def get_detail_by_id(db: AsyncSession, id: int) -> models.Guide | None:
-  result = await db.execute(
-    select(models.Guide)
-    .options(selectinload(models.Guide.adventures))
-    .where(models.Guide.id == id)
-  )
   return result.scalar_one_or_none()
 
 
