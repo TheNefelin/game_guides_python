@@ -201,7 +201,7 @@ class Adventure(Base):
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   guide: Mapped["Guide"] = relationship(back_populates="adventures")
-  images: Mapped[list["AdventureImage"]] = relationship(back_populates="adventure", cascade="all, delete-orphan")
+  images: Mapped[list["AdventureImage"]] = relationship(back_populates="adventure", cascade="all, delete-orphan", order_by="AdventureImage.sort_order, AdventureImage.id")
 
 
 # ADVENTURE IMAGES (imágenes de un adventure) ----------------------------

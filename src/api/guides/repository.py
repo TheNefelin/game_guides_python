@@ -38,7 +38,9 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int
 
 async def get_all_with_adventures(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None, search: str | None = None) -> list[models.Guide]:
   offset = (page - 1) * limit
-  stmt = select(models.Guide).options(selectinload(models.Guide.adventures))
+  stmt = select(models.Guide).options(
+    selectinload(models.Guide.adventures).selectinload(models.Adventure.images)
+  )
   if game_id is not None:
     stmt = stmt.where(models.Guide.game_id == game_id)
   if search:

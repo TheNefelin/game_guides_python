@@ -177,7 +177,7 @@ class GuideResponse(AppModel):
   updated_at: datetime
 
 class GuideDetailResponse(GuideResponse):
-  adventures: list[AdventureResponse]
+  adventures: list["AdventureDetailResponse"]
 
 
 # ADVENTURES --------------------------------------------------------
@@ -198,6 +198,10 @@ class AdventureResponse(AppModel):
   sort_order: int
   created_at: datetime
   updated_at: datetime
+
+
+class AdventureDetailResponse(AdventureResponse):
+  images: list[AdventureImageResponse]
 
 
 # ADVENTURE IMAGES --------------------------------------------------
