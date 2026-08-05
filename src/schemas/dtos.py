@@ -93,6 +93,7 @@ class GameDetailResponse(GameResponse):
   maps: list[MapResponse]
   characters: list[CharacterResponse]
   sources: list[SourceResponse]
+  guides: list["GuideDetailResponse"]
 
 
 # CHARACTERS -------------------------------------------------------

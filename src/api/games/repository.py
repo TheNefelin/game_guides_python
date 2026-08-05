@@ -80,6 +80,7 @@ async def get_detail_by_id(db: AsyncSession, id: int) -> models.Game | None:
       selectinload(models.Game.maps),
       selectinload(models.Game.characters),
       selectinload(models.Game.sources),
+      selectinload(models.Game.guides).selectinload(models.Guide.adventures).selectinload(models.Adventure.images),
     )
     .where(models.Game.id == id)
   )
@@ -97,6 +98,7 @@ async def get_detail_by_slug(db: AsyncSession, slug: str) -> models.Game | None:
       selectinload(models.Game.maps),
       selectinload(models.Game.characters),
       selectinload(models.Game.sources),
+      selectinload(models.Game.guides).selectinload(models.Guide.adventures).selectinload(models.Adventure.images),
     )
     .where(models.Game.slug == slug)
   )
