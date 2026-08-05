@@ -11,6 +11,11 @@ async def get_by_guide(db: AsyncSession, user_id: UUID, guide_id: int) -> list[d
   return [dtos.UserAdventureResponse.model_validate(e) for e in entities]
 
 
+async def get_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> list[dtos.UserAdventureResponse]:
+  entities = await repository.get_by_game(db, user_id, game_id)
+  return [dtos.UserAdventureResponse.model_validate(e) for e in entities]
+
+
 async def create(db: AsyncSession, user_id: UUID, adventure_id: int) -> dtos.UserAdventureResponse:
   if not await repository.adventure_exists(db, adventure_id):
     raise NotFoundError("Adventure")
