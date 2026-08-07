@@ -93,7 +93,27 @@ uvicorn src.main:app --reload
 pytest tests/ -v
 ```
 
-Requiere base de datos PostgreSQL configurada en `.env` (usa `DATABASE_URL`).
+Requiere base de datos PostgreSQL configurada en `.env` (usa `TEST_DATABASE_URL`). Los tests crean y dropean solo las tablas `gg_*`; tras ejecutarlos, repoblar con `python repopulate_db.py --force`.
+
+---
+
+## Base de datos
+
+Crear el schema y poblar la BD con los datos de ejemplo:
+
+```sh
+python repopulate_db.py
+```
+
+Si la BD ya tiene tablas, el script no hace nada; para forzar la re-creación de schema + seed:
+
+```sh
+python repopulate_db.py --force
+```
+
+- `postgre_schema.sql` → crea las tablas `gg_*`
+- `postgre_seed.sql` → inserta los datos de ejemplo
+- Se ejecuta contra `db_testing` por defecto; sobreescribir con la env var `REPOPULATE_DATABASE_URL`
 
 ---
 
