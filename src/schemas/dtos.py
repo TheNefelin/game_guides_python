@@ -236,3 +236,9 @@ class UserAdventureResponse(AppModel):
   is_completed: bool
   completed_at: datetime | None
 
+
+# USER PROGRESS (progreso combinado por juego) -----------------------
+class UserProgressResponse(AppModel):
+  guides: list[UserGuideResponse]
+  adventures: list[UserAdventureResponse]
+
