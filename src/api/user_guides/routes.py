@@ -19,21 +19,6 @@ def get_user_id(payload: dict = Depends(require_user)) -> UUID:
   return UUID(payload["sub"])
 
 
-@router.get(
-  "/by-game/{game_id}",
-  response_model=list[dtos.UserGuideResponse],
-  status_code=HTTP_200_OK,
-  summary="Get user guide progress by game",
-  description="Returns the authenticated user's completion status for all guides of a game.",
-)
-async def get_user_guides_by_game(
-  game_id: int,
-  user_id: UUID = Depends(get_user_id),
-  db: AsyncSession = Depends(get_db),
-):
-  return await service.get_by_game(db, user_id, game_id)
-
-
 @router.post(
   "/",
   response_model=dtos.UserGuideResponse,

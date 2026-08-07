@@ -16,17 +16,6 @@ router = APIRouter(
 
 
 @router.get(
-  "/by-guide/{guide_id}",
-  response_model=list[dtos.AdventureResponse],
-  status_code=HTTP_200_OK,
-  summary="Get adventures by guide",
-  description="Returns all adventures for a guide, without pagination.",
-)
-async def get_adventures_by_guide(guide_id: int, db: AsyncSession = Depends(get_db)):
-  return await service.get_by_guide(db, guide_id)
-
-
-@router.get(
   "/",
   response_model=dtos.PaginationResponse[dtos.AdventureResponse],
   status_code=HTTP_200_OK,

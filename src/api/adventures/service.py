@@ -12,11 +12,6 @@ async def ensure_adventure_exists(db: AsyncSession, adventure_id: int) -> None:
     raise AppError(f"Adventure with id {adventure_id} does not exist")
 
 
-async def get_by_guide(db: AsyncSession, guide_id: int) -> list[dtos.AdventureResponse]:
-  entities = await repository.get_by_guide(db, guide_id)
-  return [dtos.AdventureResponse.model_validate(e) for e in entities]
-
-
 async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, guide_id: int | None = None, search: str | None = None) -> dtos.PaginationResponse[dtos.AdventureResponse]:
   total = await repository.count(db, guide_id, search)
   entities = await repository.get_all(db, page, limit, guide_id, search)

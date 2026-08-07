@@ -4,15 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import models
 
 
-async def get_by_game(db: AsyncSession, game_id: int) -> list[models.Screenshot]:
-  result = await db.execute(
-    select(models.Screenshot)
-    .where(models.Screenshot.game_id == game_id)
-    .order_by(models.Screenshot.sort_order, models.Screenshot.id)
-  )
-  return list(result.scalars().all())
-
-
 async def get_by_id(db: AsyncSession, id: int) -> models.Screenshot | None:
   result = await db.execute(select(models.Screenshot).where(models.Screenshot.id == id))
   return result.scalar_one_or_none()

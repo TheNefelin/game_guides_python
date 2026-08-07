@@ -12,11 +12,6 @@ async def ensure_guide_exists(db: AsyncSession, guide_id: int) -> None:
     raise AppError(f"Guide with id {guide_id} does not exist")
 
 
-async def get_by_game(db: AsyncSession, game_id: int) -> list[dtos.GuideResponse]:
-  entities = await repository.get_by_game(db, game_id)
-  return [dtos.GuideResponse.model_validate(e) for e in entities]
-
-
 async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None, search: str | None = None) -> dtos.PaginationResponse[dtos.GuideResponse]:
   total = await repository.count(db, game_id, search)
   entities = await repository.get_all(db, page, limit, game_id, search)

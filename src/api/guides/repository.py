@@ -15,16 +15,6 @@ async def count(db: AsyncSession, game_id: int | None = None, search: str | None
   return result.scalar_one()
 
 
-async def get_by_game(db: AsyncSession, game_id: int) -> list[models.Guide]:
-  stmt = (
-    select(models.Guide)
-    .where(models.Guide.game_id == game_id)
-    .order_by(models.Guide.sort_order, models.Guide.id)
-  )
-  result = await db.execute(stmt)
-  return list(result.scalars().all())
-
-
 async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None, search: str | None = None) -> list[models.Guide]:
   offset = (page - 1) * limit
   stmt = select(models.Guide).order_by(models.Guide.sort_order, models.Guide.id)

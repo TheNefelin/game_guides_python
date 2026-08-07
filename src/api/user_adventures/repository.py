@@ -6,29 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import models
 
 
-async def get_by_guide(db: AsyncSession, user_id: UUID, guide_id: int) -> list[models.UserAdventure]:
-  stmt = (
-    select(models.UserAdventure)
-    .join(models.Adventure, models.Adventure.id == models.UserAdventure.adventure_id)
-    .where(models.UserAdventure.user_id == user_id, models.Adventure.guide_id == guide_id)
-    .order_by(models.Adventure.sort_order, models.Adventure.id)
-  )
-  result = await db.execute(stmt)
-  return list(result.scalars().all())
-
-
-async def get_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> list[models.UserAdventure]:
-  stmt = (
-    select(models.UserAdventure)
-    .join(models.Adventure, models.Adventure.id == models.UserAdventure.adventure_id)
-    .join(models.Guide, models.Guide.id == models.Adventure.guide_id)
-    .where(models.UserAdventure.user_id == user_id, models.Guide.game_id == game_id)
-    .order_by(models.Guide.sort_order, models.Guide.id, models.Adventure.sort_order, models.Adventure.id)
-  )
-  result = await db.execute(stmt)
-  return list(result.scalars().all())
-
-
 async def get_by_id(db: AsyncSession, user_id: UUID, adventure_id: int) -> models.UserAdventure | None:
   stmt = (
     select(models.UserAdventure)

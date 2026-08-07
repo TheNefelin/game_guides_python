@@ -14,17 +14,6 @@ router = APIRouter(
 )
 
 
-@router.get(
-  "/by-adventure/{adventure_id}",
-  response_model=list[dtos.AdventureImageResponse],
-  status_code=HTTP_200_OK,
-  summary="Get adventure images by adventure",
-  description="Returns all images for an adventure, without pagination.",
-)
-async def get_adventure_images_by_adventure(adventure_id: int, db: AsyncSession = Depends(get_db)):
-  return await service.get_by_adventure(db, adventure_id)
-
-
 @router.post(
   "/upload-image",
   response_model=dtos.AdventureImageResponse,

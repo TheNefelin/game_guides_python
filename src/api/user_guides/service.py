@@ -6,11 +6,6 @@ from src.core.exceptions import NotFoundError
 from . import repository
 
 
-async def get_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> list[dtos.UserGuideResponse]:
-  entities = await repository.get_by_game(db, user_id, game_id)
-  return [dtos.UserGuideResponse.model_validate(e) for e in entities]
-
-
 async def create(db: AsyncSession, user_id: UUID, guide_id: int) -> dtos.UserGuideResponse:
   if not await repository.guide_exists(db, guide_id):
     raise NotFoundError("Guide")

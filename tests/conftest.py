@@ -50,6 +50,7 @@ async def _drop_test_tables(conn):
 @pytest.fixture(scope="module")
 async def setup_db():
   async with engine.begin() as conn:
+    await _drop_test_tables(conn)
     await conn.run_sync(Base.metadata.create_all)
   yield
   # Solo dropear las tablas de este proyecto (gg_*) para no tocar las de otros

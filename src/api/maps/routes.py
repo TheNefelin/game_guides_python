@@ -14,17 +14,6 @@ router = APIRouter(
 )
 
 
-@router.get(
-  "/by-game/{game_id}",
-  response_model=list[dtos.MapResponse],
-  status_code=HTTP_200_OK,
-  summary="Get maps by game",
-  description="Returns all maps for a game, without pagination.",
-)
-async def get_maps_by_game(game_id: int, db: AsyncSession = Depends(get_db)):
-  return await service.get_by_game(db, game_id)
-
-
 @router.post(
   "/upload-image",
   response_model=dtos.MapResponse,

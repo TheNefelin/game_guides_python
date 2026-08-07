@@ -16,17 +16,6 @@ router = APIRouter(
 
 
 @router.get(
-  "/by-game/{game_id}",
-  response_model=list[dtos.CharacterResponse],
-  status_code=HTTP_200_OK,
-  summary="Get characters by game",
-  description="Returns all characters for a game, without pagination.",
-)
-async def get_characters_by_game(game_id: int, db: AsyncSession = Depends(get_db)):
-  return await service.get_by_game(db, game_id)
-
-
-@router.get(
   "/",
   response_model=dtos.PaginationResponse[dtos.CharacterResponse],
   status_code=HTTP_200_OK,

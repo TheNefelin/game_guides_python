@@ -14,17 +14,6 @@ router = APIRouter(
 )
 
 
-@router.get(
-  "/by-game/{game_id}",
-  response_model=list[dtos.ScreenshotResponse],
-  status_code=HTTP_200_OK,
-  summary="Get screenshots by game",
-  description="Returns all screenshots for a game, without pagination.",
-)
-async def get_screenshots_by_game(game_id: int, db: AsyncSession = Depends(get_db)):
-  return await service.get_by_game(db, game_id)
-
-
 @router.post(
   "/upload-image",
   response_model=dtos.ScreenshotResponse,
