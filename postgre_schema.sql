@@ -2,15 +2,24 @@
 -- Game Guides — Schema Definitivo
 -- ============================================================
 
-SELECT * FROM gg_games a
-LEFT JOIN gg_game_platforms b ON a.id = b.game_id
-LEFT JOIN gg_platforms c ON c.id = b.platform_id
-LEFT JOIN gg_game_genres d ON a.id = d.game_id
-LEFT JOIN gg_genres e ON e.id = d.genre_id
-LEFT JOIN gg_sources f ON a.id = f.game_id
-LEFT JOIN gg_screenshots g ON a.id = g.game_id
-LEFT JOIN gg_maps h ON a.id = h.game_id
-LEFT JOIN gg_characters i ON a.id = i.game_id
+SELECT * FROM gg_screenshots;
+SELECT * FROM gg_maps;
+SELECT * FROM gg_sources;
+SELECT * FROM gg_characters;
+SELECT * FROM gg_game_genres;
+SELECT * FROM gg_game_platforms;
+SELECT * FROM gg_games;
+SELECT * FROM gg_genres;
+SELECT * FROM gg_platforms;
+SELECT * FROM gg_adventure_images;
+SELECT * FROM gg_adventures;
+SELECT * FROM gg_guides;
+SELECT * FROM gg_roles;
+SELECT * FROM gg_users ;
+SELECT * FROM gg_user_sessions;
+SELECT * FROM gg_user_guides;
+SELECT * FROM gg_user_adventures;
+
 
 -- Drop existentes (orden inverso a creación)
 DROP TABLE IF EXISTS gg_screenshots CASCADE;
