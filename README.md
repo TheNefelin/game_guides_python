@@ -28,12 +28,24 @@ deactivate
 python.exe -m pip install --upgrade pip
 ```
 ```sh
-pip install fastapi uvicorn[standard] sqlalchemy asyncpg greenlet python-dotenv pydantic pydantic-settings
-pip install google-auth google-auth-oauthlib google-auth-httplib2
+# Web framework y servidor
+pip install fastapi uvicorn[standard]
+# ORM y base de datos
+pip install sqlalchemy asyncpg greenlet
+# Configuración y validación
+pip install python-dotenv pydantic pydantic-settings
 pip install pydantic[email]
+# Autenticación Google OAuth
+pip install google-auth google-auth-oauthlib google-auth-httplib2
+# JWT (creación/verificación de tokens)
 pip install python-jose[cryptography]
+# Rate limiting
 pip install slowapi
+# Errores estandarizados RFC 9457 (Problem Details)
+pip install fastapi-problem
+# Parseo de formularios multipart (subida de archivos)
 pip install python-multipart
+# Almacenamiento de imágenes en Cloudinary
 pip install cloudinary
 ```
 ### 3. (Opcional) Dependencias de test

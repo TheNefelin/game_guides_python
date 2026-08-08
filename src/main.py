@@ -6,11 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse, JSONResponse
 
+from fastapi_problem.handler import add_exception_handler, new_exception_handler
+from rfc9457 import BadRequestProblem, Problem, ServerProblem, UnprocessableProblem
 from slowapi.errors import RateLimitExceeded
-from slowapi import _rate_limit_exceeded_handler
 
 from src.core.config import settings
-from src.core.exceptions import AppError
 from src.core.limiter import limiter
 from src.core.logger import logger, set_request_id
 from src.api.auth.routes import router as auth_router
@@ -32,7 +32,6 @@ start_time = time.time()
 
 app = FastAPI(title="Game Guides API", description="In development", version="1.0")
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -51,20 +50,57 @@ async def log_requests(request: Request, call_next):
   })
   return response
 
-@app.exception_handler(AppError)
-async def app_error_handler(request: Request, exc: AppError):
-  logger.warning("AppError: %s", exc.message, extra={
-    "props": {"status_code": exc.status_code}
-  })
-  return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
-  
-@app.exception_handler(Exception)
-async def generic_error_handler(request: Request, exc: Exception):
-  logger.error("Unhandled exception", exc_info=exc, extra={
-    "props": {"status_code": 500}
-  })
-  return JSONResponse(status_code=500, content={"detail": "Internal server error"})
-    
+class RequestValidationProblem(UnprocessableProblem):
+  type_ = "request-validation-failed"
+  title = "Request validation error."
+
+  def __init__(self, errors=None, **kwargs):
+    super().__init__(errors=errors, **kwargs)
+    self.detail = "; ".join(str(e.get("msg", "")) for e in errors) if errors else self.title
+
+
+class InternalServerErrorProblem(ServerProblem):
+  type_ = "internal-server-error"
+  title = "Internal server error."
+
+  def __init__(self, detail=None, **kwargs):
+    super().__init__(detail="Internal server error", **kwargs)
+
+
+class RateLimitProblem(BadRequestProblem):
+  type_ = "rate-limit-exceeded"
+  title = "Rate limit exceeded."
+  status = 429
+
+
+def rate_limit_handler(eh, request: Request, exc: RateLimitExceeded):
+  headers = None
+  if hasattr(request.state, "view_rate_limit"):
+    response = request.app.state.limiter._inject_headers(
+      JSONResponse({}), request.state.view_rate_limit
+    )
+    headers = dict(response.headers)
+  return RateLimitProblem(detail=f"Rate limit exceeded: {exc.detail}", headers=headers)
+
+
+def log_problem(request: Request, exc: Exception):
+  if isinstance(exc, Problem) and exc.status < 500:
+    logger.warning("%s: %s", exc.title, exc.detail, extra={
+      "props": {"status_code": exc.status}
+    })
+
+
+eh = new_exception_handler(
+  logger=logger,
+  unhandled_wrappers={
+    "422": RequestValidationProblem,
+    "500": InternalServerErrorProblem,
+  },
+  handlers={RateLimitExceeded: rate_limit_handler},
+  pre_hooks=[log_problem],
+)
+add_exception_handler(app, eh)
+
 app.add_middleware(
   CORSMiddleware,
   allow_origins=settings.cors_origins_list,
