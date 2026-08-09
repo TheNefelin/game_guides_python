@@ -25,10 +25,15 @@ async def verify_google_token(access_token: str) -> schemas.GoogleUserInfo:
   if settings.GOOGLE_CLIENT_ID and token_info.get("aud") != settings.GOOGLE_CLIENT_ID:
     raise UnauthorizedError(message="Invalid Google token")
 
-  if token_info.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
+  # Los access tokens (lo que envía el frontend) no traen `iss` de forma
+  # confiable (ese campo solo está garantizado en id_tokens). Solo se exige
+  # cuando viene presente; la seguridad real la da el check de `aud`.
+  iss = token_info.get("iss")
+  if iss and iss not in ("accounts.google.com", "https://accounts.google.com"):
     raise UnauthorizedError(message="Invalid Google token")
 
-  if not token_info.get("email_verified", False):
+  email_verified = token_info.get("email_verified")
+  if email_verified not in (True, "true"):
     raise UnauthorizedError(message="Email not verified")
 
   return schemas.GoogleUserInfo(

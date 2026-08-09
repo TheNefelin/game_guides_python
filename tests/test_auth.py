@@ -153,7 +153,6 @@ async def test_verify_google_token_valid():
 
   payload = {
     "aud": "my-client.apps.googleusercontent.com",
-    "iss": "accounts.google.com",
     "sub": "123",
     "email": "user@example.com",
     "name": "User",
