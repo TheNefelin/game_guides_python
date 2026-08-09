@@ -9,7 +9,7 @@ Backend del proyecto Game Guides desarrollado con Python 3.12 + FastAPI y Postgr
 - Python 3.12+
 - PostgreSQL
 - [Google Auth](https://console.cloud.google.com)
-
+- [Brevo](https://app.brevo.com)
 ---
 
 ## Instalación

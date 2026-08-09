@@ -17,6 +17,11 @@ class Settings(BaseSettings):
   CLOUDINARY_API_KEY: str
   CLOUDINARY_API_SECRET: str
 
+  BREVO_API_KEY: str
+  BREVO_FROM_EMAIL: str
+  BREVO_FROM_NAME: str
+  TEST_BREVO_EMAIL: str | None = None
+
   @property
   def cors_origins_list(self) -> list[str]:
     return json.loads(self.CORS_ORIGINS)
