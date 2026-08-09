@@ -9,6 +9,7 @@ class Settings(BaseSettings):
   SECRET_KEY: str
   DATABASE_URL: str
   API_KEY: str
+  GOOGLE_CLIENT_ID: str | None = None
   TEST_DATABASE_URL: str | None = None
 
   CORS_ORIGINS: str

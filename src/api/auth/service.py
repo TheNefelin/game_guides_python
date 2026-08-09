@@ -13,7 +13,7 @@ REFRESH_TOKEN_DAYS = 7
 
 
 async def auth_service(db: AsyncSession, google_token: str) -> schemas.AuthGoogleResponse:
-  google_user_info = google_service.verify_google_token(google_token)
+  google_user_info = await google_service.verify_google_token(google_token)
 
   if not google_user_info.email_verified:
     raise UnauthorizedError(message="Email not verified")
