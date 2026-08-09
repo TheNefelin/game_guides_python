@@ -81,7 +81,12 @@ async def test_auth_google_existing_user(client, db):
 # verify_google_token (aud/iss check) ---------------------------------
 
 
-def _mock_tokeninfo(status, payload):
+def _mock_client(*responses):
+  """Fake httpx.AsyncClient. `responses` = lista de (status, payload) que se
+  devuelven en orden; la última se repite para requests extra. El contador es
+  compartido entre instancias (el código crea un AsyncClient por llamada)."""
+  counter = {"n": 0}
+
   class FakeResponse:
     def __init__(self, status, payload):
       self.status_code = status
@@ -101,6 +106,9 @@ def _mock_tokeninfo(status, payload):
       return False
 
     async def get(self, url, **kwargs):
+      index = min(counter["n"], len(responses) - 1)
+      counter["n"] += 1
+      status, payload = responses[index]
       return FakeResponse(status, payload)
 
   return FakeClient
@@ -118,7 +126,7 @@ async def test_verify_google_token_wrong_aud():
     "email_verified": True,
   }
   with patch("src.api.auth.google_service.settings.GOOGLE_CLIENT_ID", "my-client.apps.googleusercontent.com"):
-    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_tokeninfo(200, payload)):
+    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_client((200, payload))):
       try:
         await verify_google_token("token")
       except UnauthorizedError as exc:
@@ -139,7 +147,7 @@ async def test_verify_google_token_wrong_iss():
     "email_verified": True,
   }
   with patch("src.api.auth.google_service.settings.GOOGLE_CLIENT_ID", "my-client.apps.googleusercontent.com"):
-    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_tokeninfo(200, payload)):
+    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_client((200, payload))):
       try:
         await verify_google_token("token")
       except UnauthorizedError as exc:
@@ -159,12 +167,56 @@ async def test_verify_google_token_valid():
     "email_verified": True,
   }
   with patch("src.api.auth.google_service.settings.GOOGLE_CLIENT_ID", "my-client.apps.googleusercontent.com"):
-    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_tokeninfo(200, payload)):
+    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_client((200, payload))):
       info = await verify_google_token("token")
 
   assert info.email == "user@example.com"
   assert info.google_id == "123"
   assert info.email_verified is True
+
+
+async def test_verify_google_token_fallback_to_userinfo():
+  """Si /tokeninfo no trae picture, se consulta /userinfo para traerla."""
+  from src.api.auth.google_service import verify_google_token
+
+  tokeninfo = {
+    "aud": "my-client.apps.googleusercontent.com",
+    "sub": "123",
+    "email": "user@example.com",
+    "name": "User",
+    "email_verified": True,
+  }
+  userinfo = {
+    "sub": "123",
+    "email": "user@example.com",
+    "name": "User",
+    "picture": "https://lh3.googleusercontent.com/avatar",
+  }
+  with patch("src.api.auth.google_service.settings.GOOGLE_CLIENT_ID", "my-client.apps.googleusercontent.com"):
+    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_client((200, tokeninfo), (200, userinfo))):
+      info = await verify_google_token("token")
+
+  assert info.picture == "https://lh3.googleusercontent.com/avatar"
+  assert info.name == "User"
+
+
+async def test_verify_google_token_keeps_tokeninfo_picture():
+  """Si /tokeninfo ya trae picture, no se llama a /userinfo."""
+  from src.api.auth.google_service import verify_google_token
+
+  tokeninfo = {
+    "aud": "my-client.apps.googleusercontent.com",
+    "sub": "123",
+    "email": "user@example.com",
+    "name": "User",
+    "picture": "https://example.com/tokeninfo-pic.jpg",
+    "email_verified": True,
+  }
+  with patch("src.api.auth.google_service.settings.GOOGLE_CLIENT_ID", "my-client.apps.googleusercontent.com"):
+    with patch("src.api.auth.google_service.httpx.AsyncClient", _mock_client((200, tokeninfo))):
+      info = await verify_google_token("token")
+
+  assert info.picture == "https://example.com/tokeninfo-pic.jpg"
 
 
 # /api/auth/refresh ------------------------------------------------

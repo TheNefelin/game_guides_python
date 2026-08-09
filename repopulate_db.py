@@ -21,7 +21,10 @@ SEED = os.path.join(BASE_DIR, "postgre_seed.sql")
 
 
 async def count_tables(conn: asyncpg.Connection) -> int:
-    rows = await conn.fetch("SELECT tablename FROM pg_tables WHERE schemaname='public'")
+    # Solo cuentan las tablas de este proyecto (gg_*). La BD de tests la
+    # comparten otros proyectos, así que contar TODAS las tablas haría que
+    # `tables > 0` siempre fuese cierto y el script nunca repoblase.
+    rows = await conn.fetch("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename LIKE 'gg_%'")
     return len(rows)
 
 

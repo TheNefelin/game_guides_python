@@ -5,6 +5,15 @@ from src.core.exceptions import UnauthorizedError
 from . import schemas
 
 GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+
+
+async def _fetch_userinfo(client: httpx.AsyncClient, access_token: str) -> dict:
+  response = await client.get(
+    GOOGLE_USERINFO_URL,
+    headers={"Authorization": f"Bearer {access_token}"},
+  )
+  return response.json() if response.status_code == 200 else {}
 
 
 async def verify_google_token(access_token: str) -> schemas.GoogleUserInfo:
@@ -36,10 +45,17 @@ async def verify_google_token(access_token: str) -> schemas.GoogleUserInfo:
   if email_verified not in (True, "true"):
     raise UnauthorizedError(message="Email not verified")
 
+  # /tokeninfo con un access token no garantiza `picture`/`name`. Si faltan,
+  # se consultan de /userinfo (misma validez: el token ya fue validado por aud).
+  userinfo = {}
+  if not token_info.get("picture") or not token_info.get("name"):
+    async with httpx.AsyncClient(timeout=10) as client:
+      userinfo = await _fetch_userinfo(client, access_token)
+
   return schemas.GoogleUserInfo(
     google_id=token_info["sub"],
     email=token_info["email"],
-    name=token_info.get("name"),
-    picture=token_info.get("picture"),
+    name=userinfo.get("name") or token_info.get("name"),
+    picture=userinfo.get("picture") or token_info.get("picture"),
     email_verified=True,
   )
