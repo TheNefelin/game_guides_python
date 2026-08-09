@@ -47,6 +47,8 @@ pip install fastapi-problem
 pip install python-multipart
 # Almacenamiento de imágenes en Cloudinary
 pip install cloudinary
+# Validación de imágenes (decodificación real + dimensiones + anti decompression bomb)
+pip install Pillow
 ```
 ### 3. (Opcional) Dependencias de test
 ```sh

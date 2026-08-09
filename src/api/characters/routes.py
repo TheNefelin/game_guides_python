@@ -5,6 +5,7 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key, require_admin
 from src.core.database import get_db
+from src.core.uploads import validate_image_upload
 from src.schemas import dtos
 from . import service
 
@@ -87,7 +88,7 @@ async def upload_character_image(
   db: AsyncSession = Depends(get_db),
   _: dict = Depends(require_admin),
 ):
-  character = await service.upload_image(db, id, await file.read())
+  character = await service.upload_image(db, id, await validate_image_upload(file))
   return character
 
 

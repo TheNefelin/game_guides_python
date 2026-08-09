@@ -5,6 +5,7 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key, require_admin
 from src.core.database import get_db
+from src.core.uploads import validate_image_upload
 from src.schemas import dtos
 from . import service
 
@@ -104,7 +105,7 @@ async def upload_game_image(
   db: AsyncSession = Depends(get_db),
   _: dict = Depends(require_admin),
 ):
-  game = await service.upload_image(db, game_id, await file.read())
+  game = await service.upload_image(db, game_id, await validate_image_upload(file))
   return game
 
 
