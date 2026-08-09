@@ -6,13 +6,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
   DEBUG: bool = False
 
-  SECRET_KEY: str
   DATABASE_URL: str
-  API_KEY: str
-  GOOGLE_CLIENT_ID: str | None = None
-  TEST_DATABASE_URL: str | None = None
 
   CORS_ORIGINS: str
+  SECRET_KEY: str
+  API_KEY: str
+
+  GOOGLE_CLIENT_ID: str | None = None
 
   CLOUDINARY_CLOUD_NAME: str
   CLOUDINARY_API_KEY: str
@@ -21,6 +21,8 @@ class Settings(BaseSettings):
   BREVO_API_KEY: str
   BREVO_FROM_EMAIL: str
   BREVO_FROM_NAME: str
+
+  TEST_DATABASE_URL: str | None = None
   TEST_BREVO_EMAIL: str | None = None
 
   @property
