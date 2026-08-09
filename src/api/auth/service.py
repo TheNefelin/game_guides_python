@@ -18,7 +18,7 @@ async def auth_service(db: AsyncSession, google_token: str) -> schemas.AuthGoogl
   if not google_user_info.email_verified:
     raise UnauthorizedError(message="Email not verified")
 
-  user = await users_service.get_or_create_user(db, google_user_info.email)
+  user = await users_service.get_or_create_user(db, google_user_info.email, google_user_info.google_id)
 
   token = security.create_access_token(
     user.id,

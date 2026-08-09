@@ -78,6 +78,79 @@ async def test_auth_google_existing_user(client, db):
   assert response.json()["user"]["email"] == "existing@user.com"
 
 
+async def test_auth_google_persists_google_sub(client, db):
+  """El google_sub se guarda al crear un usuario nuevo."""
+  from src.api.users import repository as users_repo
+
+  mock_info = GoogleUserInfo(
+    google_id="google-id-111",
+    email="persist@user.com",
+    name="Persist",
+    picture=None,
+    email_verified=True,
+  )
+
+  with patch("src.api.auth.google_service.verify_google_token", new=AsyncMock(return_value=mock_info)):
+    response = await client.post("/api/auth/google", json={"googleToken": "valid_token"})
+
+  assert response.status_code == 200
+  created = await users_repo.get_by_email(db, "persist@user.com")
+  assert created is not None
+  assert created.google_sub == "google-id-111"
+
+
+async def test_auth_google_backfills_google_sub(client, db):
+  """Usuario existente sin google_sub: se le setea en el primer login."""
+  from src.api.users import repository as users_repo
+
+  existing = User(id=uuid.uuid4(), email="backfill@user.com", role_id=1, google_sub=None)
+  db.add(existing)
+  await db.flush()
+
+  mock_info = GoogleUserInfo(
+    google_id="google-id-222",
+    email="backfill@user.com",
+    name="Backfill",
+    picture=None,
+    email_verified=True,
+  )
+
+  with patch("src.api.auth.google_service.verify_google_token", new=AsyncMock(return_value=mock_info)):
+    response = await client.post("/api/auth/google", json={"googleToken": "valid_token"})
+
+  assert response.status_code == 200
+  user = await users_repo.get_by_google_sub(db, "google-id-222")
+  assert user is not None
+  assert user.email == "backfill@user.com"
+  assert user.id == existing.id
+
+
+async def test_auth_google_identity_by_google_sub(client, db):
+  """El login identifica por google_sub aunque el email haya cambiado en Google."""
+  from src.api.users import repository as users_repo
+
+  existing = User(id=uuid.uuid4(), email="old@user.com", role_id=1, google_sub="stable-sub")
+  db.add(existing)
+  await db.flush()
+
+  mock_info = GoogleUserInfo(
+    google_id="stable-sub",
+    email="new-email@user.com",
+    name="Renamed",
+    picture=None,
+    email_verified=True,
+  )
+
+  with patch("src.api.auth.google_service.verify_google_token", new=AsyncMock(return_value=mock_info)):
+    response = await client.post("/api/auth/google", json={"googleToken": "valid_token"})
+
+  assert response.status_code == 200
+  user = await users_repo.get_by_id(db, existing.id)
+  assert user is not None
+  assert user.email == "new-email@user.com"
+  assert user.id == existing.id
+
+
 # verify_google_token (aud/iss check) ---------------------------------
 
 
