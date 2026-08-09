@@ -1,17 +1,20 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer
 from jose import jwt, JWTError
+from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from src.api.users import repository as users_repository
 from src.core.config import settings
+from src.core.database import get_db
 from src.core.exceptions import ForbiddenError, UnauthorizedError
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 2
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+oauth2_scheme = HTTPBearer(auto_error=False)
 
 
 def create_access_token(user_id: UUID, role: str) -> str:
@@ -36,15 +39,36 @@ def verify_token(token: str) -> dict:
     raise UnauthorizedError()
 
 
+async def _load_user_role(db, user_id: UUID) -> str | None:
+  return await users_repository.get_role_name_by_id(db, user_id)
+
+
 def get_current_user(required_roles: Optional[List[str]] = None):
-  def _get_user(token: str = Depends(oauth2_scheme)):
+  async def _get_user(
+    token: str | None = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+  ):
+    if not token:
+      raise UnauthorizedError()
+
     payload = verify_token(token)
 
-    if required_roles is not None:
-      role = payload.get("role")
+    # El token solo prueba QUÉN es el usuario; el rol REAL se lee de la BD.
+    # Así un cambio de rol (o un user eliminado) se refleja de inmediato,
+    # sin esperar a que expire el token (2h). User eliminado → 401 (el
+    # frontend fuerza logout). Rol insuficiente → 403.
+    try:
+      user_id = UUID(payload["sub"])
+    except (ValueError, KeyError, TypeError):
+      raise UnauthorizedError()
 
-      if role not in required_roles:
-        raise ForbiddenError()
+    role = await users_repository.get_role_name_by_id(db, user_id)
+    if role is None:
+      raise UnauthorizedError(message="User no longer exists")
 
+    if required_roles is not None and role not in required_roles:
+      raise ForbiddenError()
+
+    payload["role"] = role
     return payload
   return _get_user

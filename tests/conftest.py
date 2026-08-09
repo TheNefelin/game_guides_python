@@ -1,4 +1,5 @@
 from uuid import uuid4
+import uuid
 
 import pytest
 from httpx import AsyncClient, ASGITransport
@@ -13,7 +14,8 @@ from src.core.security import create_access_token
 from src.main import app
 from src.models.models import Role, User, UserSession, Platforms, Genre, Game, GamePlatform, GameGenre, Character, Source
 
-ADMIN_TOKEN = create_access_token(uuid4(), "admin")
+ADMIN_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
+ADMIN_TOKEN = create_access_token(ADMIN_USER_ID, "admin")
 
 
 engine = create_async_engine(settings.TEST_DATABASE_URL, poolclass=NullPool)
@@ -71,6 +73,7 @@ async def db(setup_db):
       Role(id=1, name="user"),
       Role(id=2, name="admin"),
     ])
+    session.add(User(id=ADMIN_USER_ID, email="admin@test.com", role_id=2))
     await session.flush()
 
     yield session

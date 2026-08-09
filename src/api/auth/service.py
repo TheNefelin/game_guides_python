@@ -50,6 +50,9 @@ async def refresh_session(db: AsyncSession, refresh_token: str) -> schemas.AuthR
   if not session or session.is_revoked or session.expires_at < datetime.now(tz=timezone.utc):
     raise UnauthorizedError("Invalid or expired refresh token")
 
+  if session.user is None:
+    raise UnauthorizedError("User no longer exists")
+
   user_id = session.user_id
   role_name = session.user.role.name
 
