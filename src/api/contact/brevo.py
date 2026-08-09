@@ -3,6 +3,7 @@ import httpx
 
 from src.core.config import settings
 from src.core.exceptions import AppError
+from src.core.logger import logger
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DOCUMENTACIÓN: versión mínima y funcional (sin estilos) de los 2 envíos.
@@ -117,8 +118,24 @@ async def _send_email(to_email: str, to_name: str, subject: str, html: str, repl
       timeout=15,
     )
 
-  if response.status_code >= 400:
-    raise AppError(message="Could not send contact email", status_code=502)
+  if response.status_code < 400:
+    message_id = response.json().get("messageId")
+    logger.info("Contact email sent", extra={"props": {"to": to_email, "subject": subject, "brevo_message_id": message_id}})
+    return
+
+  logger.error(
+    "Brevo send failed",
+    extra={"props": {"status": response.status_code, "body": response.text[:500]}},
+  )
+  _raise_brevo_error(response.status_code)
+
+
+def _raise_brevo_error(status: int) -> None:
+  if status in (401, 403):
+    raise AppError(message="Brevo configuration error (invalid API key)", status_code=500)
+  if status == 429:
+    raise AppError(message="Brevo rate limit exceeded", status_code=429)
+  raise AppError(message="Could not send contact email", status_code=502)
 
 
 async def send_contact_email(reply_to_email: str, reply_to_name: str, reason: str, message: str) -> None:

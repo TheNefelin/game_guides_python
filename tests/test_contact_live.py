@@ -3,10 +3,13 @@ import pytest
 from src.api.contact import brevo
 from src.core.config import settings
 
-pytestmark = pytest.mark.skipif(
-  not settings.TEST_BREVO_EMAIL,
-  reason="TEST_BREVO_EMAIL not set",
-)
+pytestmark = [
+  pytest.mark.live,
+  pytest.mark.skipif(
+    not settings.TEST_BREVO_EMAIL,
+    reason="TEST_BREVO_EMAIL not set",
+  ),
+]
 
 
 async def test_send_live_contact_email():

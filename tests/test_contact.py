@@ -1,6 +1,8 @@
 import uuid
 from unittest.mock import AsyncMock, patch
 
+import pytest
+
 from src.api.contact import brevo
 from src.core.security import create_access_token
 from src.models.models import User
@@ -92,3 +94,28 @@ async def test_send_contact_email_includes_reply_to():
   assert "sender@example.com" in payload_captured["html"]
   assert "Sender Name" in payload_captured["html"]
   assert "sugerencia" in payload_captured["subject"]
+
+
+async def test_raise_brevo_error_auth():
+  from src.core.exceptions import AppError
+
+  with pytest.raises(AppError) as exc_info:
+    brevo._raise_brevo_error(401)
+  assert exc_info.value.status == 500
+  assert "API key" in exc_info.value.detail
+
+
+async def test_raise_brevo_error_rate_limit():
+  from src.core.exceptions import AppError
+
+  with pytest.raises(AppError) as exc_info:
+    brevo._raise_brevo_error(429)
+  assert exc_info.value.status == 429
+
+
+async def test_raise_brevo_error_provider():
+  from src.core.exceptions import AppError
+
+  with pytest.raises(AppError) as exc_info:
+    brevo._raise_brevo_error(500)
+  assert exc_info.value.status == 502

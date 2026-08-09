@@ -1,10 +1,11 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK
 
 from src.core.dependencies import verify_api_key, require_user
 from src.core.database import get_db
+from src.core.limiter import limiter
 from . import schemas, service
 
 router = APIRouter(
@@ -25,7 +26,9 @@ def get_user_id(payload: dict = Depends(require_user)) -> UUID:
   summary="Send contact message",
   description="Sends a contact message from the authenticated user via email.",
 )
+@limiter.limit("5/minute")
 async def send_contact(
+  request: Request,
   data: schemas.ContactRequest,
   user_id: UUID = Depends(get_user_id),
   db: AsyncSession = Depends(get_db),
