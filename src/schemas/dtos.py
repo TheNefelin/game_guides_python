@@ -161,7 +161,7 @@ class MapResponse(AppModel):
 # GUIDES -----------------------------------------------------------
 class GuideRequest(BaseModel):
   game_id: int
-  title: str = Field(min_length=1, max_length=200)
+  title: str = Field(min_length=1, max_length=256)
   summary: str | None = None
   sort_order: int = 0
   is_enabled: bool = True
