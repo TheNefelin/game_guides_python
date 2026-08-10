@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 from fastapi import Depends
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
@@ -45,13 +45,13 @@ async def _load_user_role(db, user_id: UUID) -> str | None:
 
 def get_current_user(required_roles: Optional[List[str]] = None):
   async def _get_user(
-    token: str | None = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials | None = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
   ):
-    if not token:
+    if credentials is None:
       raise UnauthorizedError()
 
-    payload = verify_token(token)
+    payload = verify_token(credentials.credentials)
 
     # El token solo prueba QUÉN es el usuario; el rol REAL se lee de la BD.
     # Así un cambio de rol (o un user eliminado) se refleja de inmediato,
