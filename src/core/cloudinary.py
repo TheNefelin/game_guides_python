@@ -66,7 +66,12 @@ def extract_public_id(url: str) -> str | None:
     return None
   try:
     after_upload = url.split("/upload/")[1]
-    parts = after_upload.split("/", 1)[1]
+    # Saltar el bloque de transformación opcional (c_fill,h_720,q_auto,w_1280,f_webp)
+    # hasta llegar a la versión (v<timestamp>). Sin esto, destroy() recibe un
+    # public_id inválido ("v.../folder/file") y Cloudinary no borra el archivo.
+    while after_upload and not after_upload.startswith("v"):
+      after_upload = after_upload.split("/", 1)[1]
+    parts = after_upload.split("/", 1)[1] if "/" in after_upload else after_upload
     public_id = parts.rsplit(".", 1)[0]
     return public_id
   except Exception:
