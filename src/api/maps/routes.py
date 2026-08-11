@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key, require_admin
 from src.core.database import get_db
+from src.core.limiter import limiter
 from src.core.uploads import validate_image_upload
 from src.schemas import dtos
 from . import service
@@ -20,7 +21,9 @@ router = APIRouter(
   response_model=dtos.MapResponse,
   status_code=HTTP_201_CREATED,
 )
+@limiter.limit("10/minute")
 async def create_map(
+  request: Request,
   game_id: int = Form(),
   file: UploadFile = File(...),
   alt_text: str | None = Form(default=None),

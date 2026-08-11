@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Request
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key, require_admin
 from src.core.database import get_db
+from src.core.limiter import limiter
 from src.core.uploads import validate_image_upload
 from src.schemas import dtos
 from . import service
@@ -99,7 +100,9 @@ async def update_game(id: int, data: dtos.GameRequest, db: AsyncSession = Depend
   summary="Upload game cover image",
   description="Uploads a square cover image for a game. Deletes the previous image if it exists.",
 )
+@limiter.limit("10/minute")
 async def upload_game_image(
+  request: Request,
   game_id: int = Form(), 
   file: UploadFile = File(...), 
   db: AsyncSession = Depends(get_db),

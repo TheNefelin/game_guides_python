@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Form, Request
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.core.dependencies import verify_api_key, require_admin
 from src.core.database import get_db
+from src.core.limiter import limiter
 from src.core.uploads import validate_image_upload
 from src.schemas import dtos
 from . import service
@@ -82,7 +83,9 @@ async def delete_character(id: int, db: AsyncSession = Depends(get_db), _: dict 
   summary="Upload character image",
   description="Uploads a square image for a character. Deletes the previous image if it exists.",
 )
+@limiter.limit("10/minute")
 async def upload_character_image(
+  request: Request,
   id: int = Form(),
   file: UploadFile = File(...),
   db: AsyncSession = Depends(get_db),
