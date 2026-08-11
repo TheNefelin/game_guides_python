@@ -51,13 +51,13 @@ async def get_by_id(db: AsyncSession, id: int) -> models.Genre | None:
 
 
 # DEPENDENCIES ----------------------------------------------------
-async def dependency_counts(db: AsyncSession, genre_id: int) -> dict[str, int]:
-  result = {}
-  for model in (models.GameGenre,):
-    name = model.__tablename__.replace("gg_", "")
-    stmt = select(func.count(model.game_id)).where(model.genre_id == genre_id)
-    result[name] = (await db.execute(stmt)).scalar_one()
-  return result
+async def has_dependencies(db: AsyncSession, genre_id: int) -> bool:
+  count = (
+    await db.execute(
+      select(func.count(models.GameGenre.game_id)).where(models.GameGenre.genre_id == genre_id)
+    )
+  ).scalar_one()
+  return count > 0
 
 
 # CREATE ----------------------------------------------------------

@@ -54,10 +54,7 @@ async def delete(db: AsyncSession, id: int) -> None:
   if not entity:
     raise NotFoundError("Platform")
 
-  deps = await repository.dependency_counts(db, id)
-  active = {k: v for k, v in deps.items() if v > 0}
-  if active:
-    names = ", ".join(f"{k} ({v})" for k, v in active.items())
-    raise AppError(f"Cannot delete platform with id {id}: it has dependencies: {names}")
+  if await repository.has_dependencies(db, id):
+    raise AppError(f"Cannot delete platform with id {id}: it has dependencies with games")
 
   await repository.delete(db, entity)

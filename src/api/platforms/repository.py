@@ -51,13 +51,13 @@ async def get_by_id(db: AsyncSession, id: int) -> models.Platforms | None:
 
 
 # DEPENDENCIES ----------------------------------------------------
-async def dependency_counts(db: AsyncSession, platform_id: int) -> dict[str, int]:
-  result = {}
-  for model in (models.GamePlatform,):
-    name = model.__tablename__.replace("gg_", "")
-    stmt = select(func.count(model.game_id)).where(model.platform_id == platform_id)
-    result[name] = (await db.execute(stmt)).scalar_one()
-  return result
+async def has_dependencies(db: AsyncSession, platform_id: int) -> bool:
+  count = (
+    await db.execute(
+      select(func.count(models.GamePlatform.game_id)).where(models.GamePlatform.platform_id == platform_id)
+    )
+  ).scalar_one()
+  return count > 0
 
 
 # CREATE ----------------------------------------------------------
