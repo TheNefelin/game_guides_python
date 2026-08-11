@@ -33,7 +33,7 @@ async def update(db: AsyncSession, id: int, data: dtos.SourceRequest) -> dtos.So
   if not current:
     raise NotFoundError("Source")
   await games_service.ensure_game_exists(db, data.game_id)
-  if await repository.exists_by_name(db, data.name, data.game_id):
+  if await repository.exists_by_name(db, data.name, data.game_id, exclude_id=id):
     raise DuplicateNameError(data.name)
   entity = await repository.update(db, current, data.model_dump())
   return dtos.SourceResponse.model_validate(entity)

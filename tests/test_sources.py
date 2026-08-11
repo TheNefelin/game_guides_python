@@ -97,6 +97,14 @@ async def test_update_source_duplicate(client):
   assert response.status_code == 400
 
 
+async def test_update_source_same_name_succeeds(client):
+  game = await _create_game(client)
+  created = (await client.post("/api/sources/", json={"game_id": game["id"], "name": "Wiki", "url": "https://wiki.com"})).json()
+  response = await client.put(f"/api/sources/{created['id']}", json={"game_id": game["id"], "name": "Wiki", "url": "https://wiki.com"})
+  assert response.status_code == 200
+  assert response.json()["name"] == "Wiki"
+
+
 async def test_delete_source(client):
   game = await _create_game(client)
   created = (await client.post("/api/sources/", json={"game_id": game["id"], "name": "Wiki", "url": "https://wiki.com"})).json()

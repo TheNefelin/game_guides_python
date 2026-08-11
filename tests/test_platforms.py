@@ -68,6 +68,13 @@ async def test_update_platform_duplicate(client):
   assert "already exists" in response.json()["detail"]
 
 
+async def test_update_platform_same_name_succeeds(client):
+  created = (await client.post("/api/platforms/", json={"name": "PSP"})).json()
+  response = await client.put(f"/api/platforms/{created['id']}", json={"name": "PSP"})
+  assert response.status_code == 200
+  assert response.json()["name"] == "PSP"
+
+
 async def test_delete_platform(client):
   created = (await client.post("/api/platforms/", json={"name": "Dreamcast"})).json()
   response = await client.delete(f"/api/platforms/{created['id']}")

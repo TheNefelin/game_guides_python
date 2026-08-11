@@ -40,7 +40,7 @@ async def update(db: AsyncSession, id: int, data: dtos.GenreRequest) -> dtos.Gen
   if not current_entity:
     raise NotFoundError("Genre")
 
-  if await repository.exists_by_name(db, data.name):
+  if await repository.exists_by_name(db, data.name, exclude_id=id):
     raise DuplicateNameError(name=data.name)
 
   entity = await repository.update(db, current_entity, data.model_dump())

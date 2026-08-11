@@ -29,8 +29,11 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, search: str 
 
 
 # EXISTS BY NAME --------------------------------------------------
-async def exists_by_name(db: AsyncSession, name: str) -> bool:
-  stmt = select(exists().where(models.Platforms.name == name))
+async def exists_by_name(db: AsyncSession, name: str, exclude_id: int | None = None) -> bool:
+  conditions = [models.Platforms.name == name]
+  if exclude_id is not None:
+    conditions.append(models.Platforms.id != exclude_id)
+  stmt = select(exists().where(*conditions))
   result = await db.execute(stmt)
   return result.scalar_one()
 

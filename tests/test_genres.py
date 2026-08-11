@@ -66,6 +66,13 @@ async def test_update_genre_duplicate(client):
   assert "already exists" in response.json()["detail"]
 
 
+async def test_update_genre_same_name_succeeds(client):
+  created = (await client.post("/api/genres/", json={"name": "Roguelike"})).json()
+  response = await client.put(f"/api/genres/{created['id']}", json={"name": "Roguelike"})
+  assert response.status_code == 200
+  assert response.json()["name"] == "Roguelike"
+
+
 async def test_delete_genre(client):
   created = (await client.post("/api/genres/", json={"name": "Simulation"})).json()
   response = await client.delete(f"/api/genres/{created['id']}")
