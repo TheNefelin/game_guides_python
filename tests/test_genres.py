@@ -84,6 +84,19 @@ async def test_delete_genre_not_found(client):
   assert response.status_code == 404
 
 
+async def test_delete_genre_with_dependencies(client):
+  genre = (await client.post("/api/genres/", json={"name": "Point and Click"})).json()
+  game = (await client.post("/api/games/", json={"name": "Test Game", "slug": "test-game"})).json()
+  await client.put(f"/api/games/{game['id']}", json={
+    "name": "Test Game",
+    "slug": "test-game",
+    "genre_ids": [genre["id"]],
+  })
+  response = await client.delete(f"/api/genres/{genre['id']}")
+  assert response.status_code == 400
+  assert "dependencies" in response.json()["detail"]
+
+
 async def test_pagination(client):
   for i in range(5):
     await client.post("/api/genres/", json={"name": f"Genre_{i}"})

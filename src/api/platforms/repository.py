@@ -50,6 +50,16 @@ async def get_by_id(db: AsyncSession, id: int) -> models.Platforms | None:
   return result.scalar_one_or_none()
 
 
+# DEPENDENCIES ----------------------------------------------------
+async def dependency_counts(db: AsyncSession, platform_id: int) -> dict[str, int]:
+  result = {}
+  for model in (models.GamePlatform,):
+    name = model.__tablename__.replace("gg_", "")
+    stmt = select(func.count(model.id)).where(model.platform_id == platform_id)
+    result[name] = (await db.execute(stmt)).scalar_one()
+  return result
+
+
 # CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, data: dict) -> models.Platforms:
   item = models.Platforms(**data)

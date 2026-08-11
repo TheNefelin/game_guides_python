@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
-from src.core.exceptions import DuplicateNameError, NotFoundError
+from src.core.exceptions import AppError, DuplicateNameError, NotFoundError
 from . import repository
 
 
@@ -53,5 +53,11 @@ async def delete(db: AsyncSession, id: int) -> None:
 
   if not entity:
     raise NotFoundError("Platform")
+
+  deps = await repository.dependency_counts(db, id)
+  active = {k: v for k, v in deps.items() if v > 0}
+  if active:
+    names = ", ".join(f"{k} ({v})" for k, v in active.items())
+    raise AppError(f"Cannot delete platform with id {id}: it has dependencies: {names}")
 
   await repository.delete(db, entity)
