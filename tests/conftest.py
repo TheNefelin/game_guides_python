@@ -10,6 +10,7 @@ from sqlalchemy.pool import NullPool
 from src.core.database import Base, get_db
 from src.core.config import settings
 from src.core.dependencies import verify_api_key
+from src.core.limiter import limiter
 from src.core.security import create_access_token
 from src.main import app
 from src.models.models import (
@@ -88,6 +89,12 @@ async def db(setup_db):
     await session.flush()
 
     yield session
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter():
+  limiter.reset()
+  yield
 
 
 @pytest.fixture

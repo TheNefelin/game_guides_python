@@ -9,6 +9,7 @@ from starlette.responses import FileResponse, JSONResponse
 from fastapi_problem.handler import add_exception_handler, new_exception_handler
 from rfc9457 import BadRequestProblem, Problem, ServerProblem, UnprocessableProblem
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from src.core.config import settings
 from src.core.limiter import limiter
@@ -101,7 +102,9 @@ eh = new_exception_handler(
   pre_hooks=[log_problem],
 )
 add_exception_handler(app, eh)
+app.add_exception_handler(RateLimitExceeded, eh)
 
+app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
   CORSMiddleware,
   allow_origins=settings.cors_origins_list,
