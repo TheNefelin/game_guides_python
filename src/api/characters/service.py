@@ -60,12 +60,13 @@ async def upload_image(db: AsyncSession, id: int, file_bytes: bytes) -> dtos.Cha
   if not entity:
     raise NotFoundError("Character")
 
+  image_url, _ = upload_image_1_1(file_bytes, folder="characters")
+
   if entity.image_url:
     public_id = extract_public_id(entity.image_url)
     if public_id:
       cloudinary_delete(public_id)
 
-  image_url, _ = upload_image_1_1(file_bytes, folder="characters")
   updated = await repository.update(db, entity, {"image_url": image_url})
   return dtos.CharacterResponse.model_validate(updated)
 

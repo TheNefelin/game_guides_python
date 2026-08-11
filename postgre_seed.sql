@@ -3,13 +3,15 @@
 -- Generado desde GGDB.xlsx (fuente de verdad)
 -- Sin IDs en duro: FKs resueltas por nombre/slug/título
 -- sort_order 1-based correlativo por grupo
+-- Transaccional: todo el seed corre dentro de BEGIN/COMMIT;
+-- si algún INSERT falla o conflictúa, se anula todo (ROLLBACK)
 -- ============================================================
+BEGIN;
 
 -- Roles por defecto
 INSERT INTO gg_roles (name) VALUES
   ('user'),
-  ('admin')
-ON CONFLICT (name) DO NOTHING;
+  ('admin');
 
 -- Plataformas
 INSERT INTO gg_platforms (name) VALUES
@@ -19,8 +21,7 @@ INSERT INTO gg_platforms (name) VALUES
   ('PS5'),
   ('PC'),
   ('Xbox'),
-  ('Switch')
-ON CONFLICT (name) DO NOTHING;
+  ('Switch');
 
 -- Géneros
 INSERT INTO gg_genres (name) VALUES
@@ -30,8 +31,7 @@ INSERT INTO gg_genres (name) VALUES
   ('Open World'),
   ('Adventure'),
   ('Action RPG'),
-  ('Hack and Slash')
-ON CONFLICT (name) DO NOTHING;
+  ('Hack and Slash');
 
 -- ============================================================
 -- Games (resuelve por name UNIQUE)
@@ -80,7 +80,7 @@ VALUES
     'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785273843/games/mkae5xnnpho65uhi7gvx.webp',
     2017, 10, TRUE, 6
   )
-ON CONFLICT (name) DO NOTHING;
+;
 
 -- ============================================================
 -- Game-Platform relations (sin IDs, resuelve por nombre)
@@ -97,8 +97,7 @@ WHERE (g.name, p.name) IN (
   ('Grand Theft Auto III', 'PS2'),
   ('Grand Theft Auto III', 'PC'),
   ('Horizon Zero Dawn', 'PS4')
-)
-ON CONFLICT DO NOTHING;
+);
 
 -- ============================================================
 -- Game-Genre relations (sin IDs, resuelve por nombre)
@@ -115,8 +114,7 @@ WHERE (g.name, c.name) IN (
   ('Horizon Zero Dawn', 'Action'),
   ('Horizon Zero Dawn', 'Open World'),
   ('Horizon Zero Dawn', 'Adventure')
-)
-ON CONFLICT DO NOTHING;
+);
 
 -- ============================================================
 -- Sources (resuelve game_id por slug) — sort_order 1-based
@@ -134,8 +132,7 @@ SELECT g.id, x.name, x.url, x.sort_order FROM gg_games g, (VALUES
   ('final-fantasy-ix', 'Trofeo: Beating the rigtime blues (angelo noctis)', 'https://www.youtube.com/watch?v=RWI-uaZsYAY&lc=UgxWdOT4ZJzoZmeEJix4AaABAg.9xkQXwbhDhM9xkVq_TWzy0', 3),
   ('final-fantasy-ix', 'Trofeo: A clean bill of health (chibikei)', 'https://www.youtube.com/watch?v=Vrh5KILchfc', 4)
 ) AS x(slug, name, url, sort_order)
-WHERE g.slug = x.slug
-ON CONFLICT DO NOTHING;
+WHERE g.slug = x.slug;
 
 -- ============================================================
 -- Characters (resuelve game_id por slug) — sort_order 1-based
@@ -188,8 +185,7 @@ SELECT g.id, x.name, x.slug, x.description, x.image_url, x.is_playable, x.sort_o
   ('chrono-cross', 'Draggy', 'character-draggy', E'Se obtiene al poner el huevo gigante en Fort Dragonia', 'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785514237/characters/bkxwfgkai3ld0zxj9xom.webp', TRUE, 44),
   ('chrono-cross', 'Orlha', 'character-orlha', E'Orlha\nSe obtiene en Guldove devolviéndole el Sapphire Brooch como Serge', 'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785514271/characters/thlnw9nwcuotpr5dra50.webp', TRUE, 45)
 ) AS x(game_slug, name, slug, description, image_url, is_playable, sort_order)
-WHERE g.slug = x.game_slug
-ON CONFLICT DO NOTHING;
+WHERE g.slug = x.game_slug;
 
 -- ============================================================
 -- Screenshots (resuelve game_id por slug) — sort_order 1-based
@@ -209,8 +205,7 @@ SELECT g.id, x.image_url, x.alt_text, x.sort_order FROM gg_games g, (VALUES
   ('horizon-zero-dawn', 'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785274097/screenshots/bocsyt4nwuzzuim4uakb.webp', 'Rost', 1),
   ('horizon-zero-dawn', 'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785274114/screenshots/qqecprtvjwmlnzxx4eqd.webp', 'Aloy', 2)
 ) AS x(slug, image_url, alt_text, sort_order)
-WHERE g.slug = x.slug
-ON CONFLICT DO NOTHING;
+WHERE g.slug = x.slug;
 
 -- ============================================================
 -- Maps (resuelve game_id por slug) — sort_order 1-based
@@ -230,8 +225,7 @@ SELECT g.id, x.image_url, x.alt_text, x.sort_order FROM gg_games g, (VALUES
   ('darksiders-2', 'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785114557/maps/hvdktzhzrfxu50vpufw8.webp', 'Lostlight', 3),
   ('darksiders-2', 'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1785114608/maps/s3gzkujoslz5xqdj2osj.webp', 'Shadows Edge', 4)
 ) AS x(slug, image_url, alt_text, sort_order)
-WHERE g.slug = x.slug
-ON CONFLICT DO NOTHING;
+WHERE g.slug = x.slug;
 
 -- ============================================================
 -- Guides (resuelve game_id por slug; sort_order 1-based correlativo por juego)
@@ -337,8 +331,7 @@ SELECT g.id, x.title, x.summary, x.sort_order, x.is_enabled FROM gg_games g, (VA
   ('horizon-zero-dawn', 'Conseguir las 5 células de energía para obtener la armadura Tejeescudos del arsenal antiguo', NULL, 3, TRUE),
   ('horizon-zero-dawn', 'Conseguir los 13 aliados para la batalla final', E'✓ Básicamente hay que completar todas las misiones posibles para desbloquear todos los aliados', 4, TRUE)
 ) AS x(game_slug, title, summary, sort_order, is_enabled)
-WHERE g.slug = x.game_slug
-ON CONFLICT DO NOTHING;
+WHERE g.slug = x.game_slug;
 
 -- ============================================================
 -- Adventures (resuelve guía por (game_slug, guide_sort); sort_order 1-based)
@@ -723,8 +716,7 @@ FROM gg_games g, gg_guides gr, (VALUES
   ('grand-theft-auto-iii', '(Shoreside Vale) - Misión Importar/exportar - Vehículo Suburbano', 25, E'Stretch', FALSE, FALSE, 16),
   ('grand-theft-auto-iii', '(Shoreside Vale) - Misión Importar/exportar - Vehículo Suburbano', 25, E'Taxi', FALSE, FALSE, 17)
 ) AS x(game_slug, guide_title, guide_sort, description, is_important, is_optional, sort_order)
-WHERE g.slug = x.game_slug AND gr.game_id = g.id AND gr.title = x.guide_title AND gr.sort_order = x.guide_sort
-ON CONFLICT DO NOTHING;
+WHERE g.slug = x.game_slug AND gr.game_id = g.id AND gr.title = x.guide_title AND gr.sort_order = x.guide_sort;
 
 -- ============================================================
 -- AdventureImages (resuelve adventure por (guide_sort, adventure_sort))
@@ -1273,6 +1265,7 @@ FROM gg_games g, gg_guides gr, gg_adventures a, (VALUES
   ('grand-theft-auto-iii', '(Shoreside Vale) - Misión Importar/exportar - Vehículo Suburbano', 25, 17, 'https://res.cloudinary.com/dsvkbe0mc/image/upload/v1786424567/adventures/rahvqbv4popilbkjpuut.webp', 'Taxi', 1)
 ) AS x(game_slug, guide_title, guide_sort, adventure_sort, image_url, alt_text, sort_order)
 WHERE g.slug = x.game_slug AND gr.game_id = g.id AND gr.title = x.guide_title AND gr.sort_order = x.guide_sort
-  AND a.guide_id = gr.id AND a.sort_order = x.adventure_sort
-ON CONFLICT DO NOTHING;
+  AND a.guide_id = gr.id AND a.sort_order = x.adventure_sort;
+
+COMMIT;
 

@@ -21,6 +21,8 @@ DROP TABLE IF EXISTS gg_user_sessions CASCADE;
 DROP TABLE IF EXISTS gg_users CASCADE;
 DROP TABLE IF EXISTS gg_roles CASCADE;
 
+BEGIN;
+
 -- ============================================================
 -- GG_Roles
 CREATE TABLE IF NOT EXISTS gg_roles (
@@ -218,3 +220,5 @@ CREATE TABLE IF NOT EXISTS gg_user_adventures (
 );
 
 CREATE INDEX idx_gg_user_adventures_user ON gg_user_adventures (user_id);
+
+COMMIT;

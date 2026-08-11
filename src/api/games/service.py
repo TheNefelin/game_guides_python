@@ -102,12 +102,13 @@ async def upload_image(db: AsyncSession, id: int, file_bytes: bytes) -> dtos.Gam
   if not entity:
     raise NotFoundError("Game")
 
+  cover_url, _ = cloudinary_upload(file_bytes, folder="games")
+
   if entity.cover_url:
     public_id = extract_public_id(entity.cover_url)
     if public_id:
       cloudinary_delete(public_id)
 
-  cover_url, _ = cloudinary_upload(file_bytes, folder="games")
   entity = await repository.set_cover_url(db, id, cover_url)
   return dtos.GameResponse.model_validate(entity)
 
