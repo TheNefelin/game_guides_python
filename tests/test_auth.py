@@ -132,6 +132,7 @@ async def test_auth_google_identity_by_google_sub(client, db):
   existing = User(id=uuid.uuid4(), email="old@user.com", role_id=1, google_sub="stable-sub")
   db.add(existing)
   await db.flush()
+  existing_id = existing.id
 
   mock_info = GoogleUserInfo(
     google_id="stable-sub",
@@ -145,10 +146,10 @@ async def test_auth_google_identity_by_google_sub(client, db):
     response = await client.post("/api/auth/google", json={"googleToken": "valid_token"})
 
   assert response.status_code == 200
-  user = await users_repo.get_by_id(db, existing.id)
+  user = await users_repo.get_by_id(db, existing_id)
   assert user is not None
   assert user.email == "new-email@user.com"
-  assert user.id == existing.id
+  assert user.id == existing_id
 
 
 # verify_google_token (aud/iss check) ---------------------------------

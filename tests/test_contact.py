@@ -50,7 +50,7 @@ async def test_send_contact_user_not_found(client, db):
     json={"reason": "otros", "name": "Ghost", "message": "nadie"},
   )
 
-  assert response.status_code == 404
+  assert response.status_code == 401
 
 
 async def test_send_contact_brevo_failure(client, db):
