@@ -2,6 +2,7 @@ import cloudinary
 import cloudinary.uploader
 
 from src.core.config import settings
+from src.core.logger import logger
 
 cloudinary.config(
   cloud_name=settings.CLOUDINARY_CLOUD_NAME,
@@ -57,8 +58,23 @@ def upload_image_free(file_bytes: bytes, folder: str, public_id: str = None) -> 
   return result["secure_url"], result["public_id"]
 
 
-def delete_image(public_id: str):
-  cloudinary.uploader.destroy(public_id, resource_type="image")
+def delete_image(public_id: str, retries: int = 2) -> bool:
+  for attempt in range(retries):
+    try:
+      result = cloudinary.uploader.destroy(public_id, resource_type="image")
+    except Exception as exc:
+      if attempt < retries - 1:
+        continue
+      logger.error(f"Cloudinary destroy failed for {public_id}: {exc}")
+      return False
+    status = result.get("result") if isinstance(result, dict) else None
+    if status in ("ok", "not found"):
+      return True
+    if attempt < retries - 1:
+      continue
+    logger.error(f"Cloudinary destroy returned unexpected status for {public_id}: {result}")
+    return False
+  return False
 
 
 def extract_public_id(url: str) -> str | None:

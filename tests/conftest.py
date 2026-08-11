@@ -12,7 +12,11 @@ from src.core.config import settings
 from src.core.dependencies import verify_api_key
 from src.core.security import create_access_token
 from src.main import app
-from src.models.models import Role, User, UserSession, Platforms, Genre, Game, GamePlatform, GameGenre, Character, Source
+from src.models.models import (
+  Role, User, UserSession, Platforms, Genre, Game, GamePlatform, GameGenre,
+  Character, Source, Screenshot, Map, Guide, UserGuide, Adventure,
+  AdventureImage, UserAdventure,
+)
 
 ADMIN_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 ADMIN_TOKEN = create_access_token(ADMIN_USER_ID, "admin")
@@ -25,12 +29,19 @@ TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind
 async def _clean_tables(session: AsyncSession):
   """Delete all data from test-relevant tables in FK-safe order."""
   await session.execute(UserSession.__table__.delete())
-  await session.execute(User.__table__.delete())
+  await session.execute(UserGuide.__table__.delete())
+  await session.execute(UserAdventure.__table__.delete())
+  await session.execute(AdventureImage.__table__.delete())
+  await session.execute(Adventure.__table__.delete())
+  await session.execute(Guide.__table__.delete())
   await session.execute(Source.__table__.delete())
   await session.execute(Character.__table__.delete())
+  await session.execute(Screenshot.__table__.delete())
+  await session.execute(Map.__table__.delete())
   await session.execute(GameGenre.__table__.delete())
   await session.execute(GamePlatform.__table__.delete())
   await session.execute(Game.__table__.delete())
+  await session.execute(User.__table__.delete())
   await session.execute(Platforms.__table__.delete())
   await session.execute(Genre.__table__.delete())
   await session.execute(Role.__table__.delete())

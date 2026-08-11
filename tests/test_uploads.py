@@ -61,3 +61,33 @@ async def test_validate_rejects_excessive_dimensions():
   big = _bytes_for("PNG", size=(MAX_IMAGE_DIMENSION + 1, 4))
   with pytest.raises(AppError, match="maximum dimensions"):
     await validate_image_upload(_upload(big))
+
+
+async def test_delete_image_ok(monkeypatch):
+  import cloudinary.uploader as cu
+  from src.core import cloudinary as c
+  monkeypatch.setattr(cu, "destroy", lambda *a, **k: {"result": "ok"})
+  assert c.delete_image("games/abc") is True
+
+
+async def test_delete_image_not_found_treated_as_success(monkeypatch):
+  import cloudinary.uploader as cu
+  from src.core import cloudinary as c
+  monkeypatch.setattr(cu, "destroy", lambda *a, **k: {"result": "not found"})
+  assert c.delete_image("games/abc") is True
+
+
+async def test_delete_image_unexpected_status_is_false(monkeypatch):
+  import cloudinary.uploader as cu
+  from src.core import cloudinary as c
+  monkeypatch.setattr(cu, "destroy", lambda *a, **k: {"result": "error"})
+  assert c.delete_image("games/abc") is False
+
+
+async def test_delete_image_raises_is_false(monkeypatch):
+  import cloudinary.uploader as cu
+  from src.core import cloudinary as c
+  def boom(*a, **k):
+    raise RuntimeError("network")
+  monkeypatch.setattr(cu, "destroy", boom)
+  assert c.delete_image("games/abc") is False

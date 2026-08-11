@@ -55,7 +55,7 @@ async def dependency_counts(db: AsyncSession, genre_id: int) -> dict[str, int]:
   result = {}
   for model in (models.GameGenre,):
     name = model.__tablename__.replace("gg_", "")
-    stmt = select(func.count(model.id)).where(model.genre_id == genre_id)
+    stmt = select(func.count(model.game_id)).where(model.genre_id == genre_id)
     result[name] = (await db.execute(stmt)).scalar_one()
   return result
 
