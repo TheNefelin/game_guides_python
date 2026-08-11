@@ -1,3 +1,15 @@
+import io
+from unittest.mock import patch
+
+from PIL import Image
+
+
+def _image_bytes() -> bytes:
+  buffer = io.BytesIO()
+  Image.new("RGB", (4, 4)).save(buffer, format="PNG")
+  return buffer.getvalue()
+
+
 async def _create_game(client) -> dict:
   response = await client.post("/api/games/", json={
     "name": "Test Game",
@@ -119,3 +131,30 @@ async def test_delete_adventure(client):
 async def test_delete_adventure_not_found(client):
   response = await client.delete("/api/adventures/9999")
   assert response.status_code == 404
+
+
+async def test_delete_adventure_with_user_progress_blocked(client):
+  game = await _create_game(client)
+  guide = await _create_guide(client, game["id"])
+  adventure = await _create_adventure(client, guide["id"])
+  await client.post("/api/user-adventures/", json={"adventure_id": adventure["id"]})
+  response = await client.delete(f"/api/adventures/{adventure['id']}")
+  assert response.status_code == 400
+  assert "user progress (1)" in response.json()["detail"]
+
+
+async def test_delete_adventure_cleans_cloudinary_images(client):
+  game = await _create_game(client)
+  guide = await _create_guide(client, game["id"])
+  adventure = await _create_adventure(client, guide["id"])
+  with patch("src.api.adventure_images.service.upload_image_16_9", return_value=("https://res.cloudinary.com/demo/image/upload/v1/adventures/img.webp", "adventures/img")):
+    created = await client.post(
+      "/api/adventure-images/upload-image",
+      data={"adventure_id": str(adventure["id"])},
+      files={"file": ("img.png", _image_bytes(), "image/png")},
+    )
+  assert created.status_code == 201
+  with patch("src.api.adventures.service.cloudinary_delete") as mock_delete:
+    response = await client.delete(f"/api/adventures/{adventure['id']}")
+  assert response.status_code == 204
+  mock_delete.assert_called_once_with("adventures/img")

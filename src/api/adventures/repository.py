@@ -1,4 +1,5 @@
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import models
@@ -28,6 +29,21 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, guide_id: in
 async def get_by_id(db: AsyncSession, id: int) -> models.Adventure | None:
   result = await db.execute(select(models.Adventure).where(models.Adventure.id == id))
   return result.scalar_one_or_none()
+
+
+async def get_by_id_with_images(db: AsyncSession, id: int) -> models.Adventure | None:
+  result = await db.execute(
+    select(models.Adventure)
+    .options(selectinload(models.Adventure.images))
+    .where(models.Adventure.id == id)
+  )
+  return result.scalar_one_or_none()
+
+
+async def count_user_adventures(db: AsyncSession, adventure_id: int) -> int:
+  stmt = select(func.count(models.UserAdventure.user_id)).where(models.UserAdventure.adventure_id == adventure_id)
+  result = await db.execute(stmt)
+  return result.scalar_one()
 
 
 async def create(db: AsyncSession, data: dict) -> models.Adventure:

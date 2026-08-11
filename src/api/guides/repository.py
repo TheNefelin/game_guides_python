@@ -50,6 +50,16 @@ async def exists_by_id(db: AsyncSession, id: int) -> bool:
   return result.scalar_one()
 
 
+# DEPENDENCIES ----------------------------------------------------
+async def dependency_counts(db: AsyncSession, guide_id: int) -> dict[str, int]:
+  result = {}
+  stmt = select(func.count(models.Adventure.id)).where(models.Adventure.guide_id == guide_id)
+  result["adventures"] = (await db.execute(stmt)).scalar_one()
+  stmt = select(func.count(models.UserGuide.guide_id)).where(models.UserGuide.guide_id == guide_id)
+  result["user_guides"] = (await db.execute(stmt)).scalar_one()
+  return result
+
+
 async def create(db: AsyncSession, data: dict) -> models.Guide:
   item = models.Guide(**data)
   db.add(item)

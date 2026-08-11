@@ -52,4 +52,11 @@ async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
   if not entity:
     raise NotFoundError("Guide")
+
+  deps = await repository.dependency_counts(db, id)
+  active = {k: v for k, v in deps.items() if v > 0}
+  if active:
+    names = ", ".join(f"{k} ({v})" for k, v in active.items())
+    raise AppError(f"Cannot delete guide with id {id}: it has dependencies: {names}")
+
   await repository.delete(db, entity)

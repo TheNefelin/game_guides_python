@@ -23,8 +23,8 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, search: str 
   result = await db.execute(
     stmt
     .options(
-      joinedload(models.Game.platforms),
-      joinedload(models.Game.genres),
+      selectinload(models.Game.platforms),
+      selectinload(models.Game.genres),
     )
     .order_by(models.Game.sort_order, models.Game.name)
     .offset(offset)

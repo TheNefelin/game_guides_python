@@ -114,3 +114,21 @@ async def test_delete_guide(client):
 async def test_delete_guide_not_found(client):
   response = await client.delete("/api/guides/9999")
   assert response.status_code == 404
+
+
+async def test_delete_guide_with_adventure_blocked(client):
+  game = await _create_game(client)
+  guide = await _create_guide(client, game["id"])
+  await client.post("/api/adventures/", json={"guide_id": guide["id"], "description": "Step"})
+  response = await client.delete(f"/api/guides/{guide['id']}")
+  assert response.status_code == 400
+  assert "adventures (1)" in response.json()["detail"]
+
+
+async def test_delete_guide_with_user_progress_blocked(client):
+  game = await _create_game(client)
+  guide = await _create_guide(client, game["id"])
+  await client.post("/api/user-guides/", json={"guide_id": guide["id"]})
+  response = await client.delete(f"/api/guides/{guide['id']}")
+  assert response.status_code == 400
+  assert "user_guides (1)" in response.json()["detail"]

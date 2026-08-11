@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
 from src.core.exceptions import AppError, NotFoundError
+from src.core.cloudinary import delete_image as cloudinary_delete, extract_public_id
 from src.api.guides import service as guides_service
 from . import repository
 
@@ -42,7 +43,18 @@ async def update(db: AsyncSession, id: int, data: dtos.AdventureRequest) -> dtos
 
 
 async def delete(db: AsyncSession, id: int) -> None:
-  entity = await repository.get_by_id(db, id)
+  entity = await repository.get_by_id_with_images(db, id)
   if not entity:
     raise NotFoundError("Adventure")
+
+  user_count = await repository.count_user_adventures(db, id)
+  if user_count > 0:
+    raise AppError(f"Cannot delete adventure with id {id}: it has user progress ({user_count})")
+
+  image_urls = [img.image_url for img in entity.images if img.image_url]
   await repository.delete(db, entity)
+
+  for url in image_urls:
+    public_id = extract_public_id(url)
+    if public_id:
+      cloudinary_delete(public_id)
