@@ -1,3 +1,15 @@
+import io
+from unittest.mock import patch
+
+from PIL import Image
+
+
+def _image_bytes() -> bytes:
+  buffer = io.BytesIO()
+  Image.new("RGB", (4, 4)).save(buffer, format="PNG")
+  return buffer.getvalue()
+
+
 async def _create_game(client, **overrides) -> dict:
   payload = {
     "name": "Test Game",
@@ -199,3 +211,100 @@ async def test_delete_game_with_dependencies(client):
   response = await client.delete(f"/api/games/{game['id']}")
   assert response.status_code == 400
   assert "dependencies" in response.json()["detail"]
+
+
+# UPLOAD / DELETE IMAGE -------------------------------------------
+
+COVER_URL = "https://res.cloudinary.com/demo/image/upload/v1/games/cover.webp"
+NEW_COVER_URL = "https://res.cloudinary.com/demo/image/upload/v2/games/new.webp"
+
+
+async def test_upload_game_cover(client):
+  game = await _create_game(client)
+  with patch("src.api.games.service.cloudinary_upload", return_value=(COVER_URL, "games/cover")):
+    response = await client.post(
+      "/api/games/upload-image",
+      data={"game_id": str(game["id"])},
+      files={"file": ("cover.png", _image_bytes(), "image/png")},
+    )
+  assert response.status_code == 200
+  assert response.json()["cover_url"] == COVER_URL
+
+
+async def test_upload_game_cover_replaces_old_image(client):
+  game = await _create_game(client)
+  with patch("src.api.games.service.cloudinary_upload", return_value=(COVER_URL, "games/cover")):
+    await client.post(
+      "/api/games/upload-image",
+      data={"game_id": str(game["id"])},
+      files={"file": ("cover.png", _image_bytes(), "image/png")},
+    )
+  with patch("src.api.games.service.cloudinary_upload", return_value=(NEW_COVER_URL, "games/new")), \
+       patch("src.api.games.service.cloudinary_delete") as mock_delete:
+    response = await client.post(
+      "/api/games/upload-image",
+      data={"game_id": str(game["id"])},
+      files={"file": ("cover.png", _image_bytes(), "image/png")},
+    )
+  assert response.status_code == 200
+  mock_delete.assert_called_once_with("games/cover")
+
+
+async def test_upload_game_cover_keeps_old_on_upload_failure(client):
+  import pytest
+  game = await _create_game(client)
+  with patch("src.api.games.service.cloudinary_upload", return_value=(COVER_URL, "games/cover")):
+    await client.post(
+      "/api/games/upload-image",
+      data={"game_id": str(game["id"])},
+      files={"file": ("cover.png", _image_bytes(), "image/png")},
+    )
+  with patch("src.api.games.service.cloudinary_upload", side_effect=RuntimeError("upload failed")) as mock_upload, \
+       patch("src.api.games.service.cloudinary_delete") as mock_delete:
+    with pytest.raises(RuntimeError):
+      await client.post(
+        "/api/games/upload-image",
+        data={"game_id": str(game["id"])},
+        files={"file": ("cover.png", _image_bytes(), "image/png")},
+      )
+  mock_upload.assert_called_once()
+  mock_delete.assert_not_called()
+
+
+async def test_upload_game_cover_unknown_game(client):
+  response = await client.post(
+    "/api/games/upload-image",
+    data={"game_id": "9999"},
+    files={"file": ("cover.png", _image_bytes(), "image/png")},
+  )
+  assert response.status_code == 404
+
+
+async def test_upload_game_cover_rejects_non_image(client):
+  game = await _create_game(client)
+  response = await client.post(
+    "/api/games/upload-image",
+    data={"game_id": str(game["id"])},
+    files={"file": ("cover.txt", b"not an image", "text/plain")},
+  )
+  assert response.status_code == 400
+
+
+async def test_delete_game_cover(client):
+  game = await _create_game(client)
+  with patch("src.api.games.service.cloudinary_upload", return_value=(COVER_URL, "games/cover")):
+    await client.post(
+      "/api/games/upload-image",
+      data={"game_id": str(game["id"])},
+      files={"file": ("cover.png", _image_bytes(), "image/png")},
+    )
+  with patch("src.api.games.service.cloudinary_delete") as mock_delete:
+    response = await client.delete(f"/api/games/{game['id']}/image")
+  assert response.status_code == 200
+  assert response.json()["cover_url"] is None
+  mock_delete.assert_called_once_with("games/cover")
+
+
+async def test_delete_game_cover_not_found(client):
+  response = await client.delete("/api/games/9999/image")
+  assert response.status_code == 404

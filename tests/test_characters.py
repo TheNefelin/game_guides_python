@@ -1,3 +1,15 @@
+import io
+from unittest.mock import patch
+
+from PIL import Image
+
+
+def _image_bytes() -> bytes:
+  buffer = io.BytesIO()
+  Image.new("RGB", (4, 4)).save(buffer, format="PNG")
+  return buffer.getvalue()
+
+
 async def _create_game(client) -> dict:
   response = await client.post("/api/games/", json={
     "name": "Test Game",
@@ -115,4 +127,111 @@ async def test_delete_character(client):
 
 async def test_delete_character_not_found(client):
   response = await client.delete("/api/characters/9999")
+  assert response.status_code == 404
+
+
+# UPLOAD / DELETE IMAGE -------------------------------------------
+
+IMAGE_URL = "https://res.cloudinary.com/demo/image/upload/v1/characters/serge.webp"
+NEW_IMAGE_URL = "https://res.cloudinary.com/demo/image/upload/v2/characters/serge-new.webp"
+
+
+async def _create_character(client) -> dict:
+  game = await _create_game(client)
+  response = await client.post("/api/characters/", json={
+    "game_id": game["id"],
+    "name": "Serge",
+    "slug": "serge",
+  })
+  return response.json()
+
+
+async def test_upload_character_image(client):
+  character = await _create_character(client)
+  with patch("src.api.characters.service.upload_image_1_1", return_value=(IMAGE_URL, "characters/serge")):
+    response = await client.post(
+      "/api/characters/upload-image",
+      data={"id": str(character["id"])},
+      files={"file": ("serge.png", _image_bytes(), "image/png")},
+    )
+  assert response.status_code == 200
+  assert response.json()["image_url"] == IMAGE_URL
+
+
+async def test_upload_character_image_replaces_old_image(client):
+  character = await _create_character(client)
+  with patch("src.api.characters.service.upload_image_1_1", return_value=(IMAGE_URL, "characters/serge")):
+    await client.post(
+      "/api/characters/upload-image",
+      data={"id": str(character["id"])},
+      files={"file": ("serge.png", _image_bytes(), "image/png")},
+    )
+  with patch("src.api.characters.service.upload_image_1_1", return_value=(NEW_IMAGE_URL, "characters/serge-new")), \
+       patch("src.api.characters.service.cloudinary_delete") as mock_delete:
+    response = await client.post(
+      "/api/characters/upload-image",
+      data={"id": str(character["id"])},
+      files={"file": ("serge.png", _image_bytes(), "image/png")},
+    )
+  assert response.status_code == 200
+  mock_delete.assert_called_once_with("characters/serge")
+
+
+async def test_upload_character_image_keeps_old_on_upload_failure(client):
+  import pytest
+  character = await _create_character(client)
+  with patch("src.api.characters.service.upload_image_1_1", return_value=(IMAGE_URL, "characters/serge")):
+    await client.post(
+      "/api/characters/upload-image",
+      data={"id": str(character["id"])},
+      files={"file": ("serge.png", _image_bytes(), "image/png")},
+    )
+  with patch("src.api.characters.service.upload_image_1_1", side_effect=RuntimeError("upload failed")) as mock_upload, \
+       patch("src.api.characters.service.cloudinary_delete") as mock_delete:
+    with pytest.raises(RuntimeError):
+      await client.post(
+        "/api/characters/upload-image",
+        data={"id": str(character["id"])},
+        files={"file": ("serge.png", _image_bytes(), "image/png")},
+      )
+  mock_upload.assert_called_once()
+  mock_delete.assert_not_called()
+
+
+async def test_upload_character_image_unknown_character(client):
+  response = await client.post(
+    "/api/characters/upload-image",
+    data={"id": "9999"},
+    files={"file": ("serge.png", _image_bytes(), "image/png")},
+  )
+  assert response.status_code == 404
+
+
+async def test_upload_character_image_rejects_non_image(client):
+  character = await _create_character(client)
+  response = await client.post(
+    "/api/characters/upload-image",
+    data={"id": str(character["id"])},
+    files={"file": ("serge.txt", b"not an image", "text/plain")},
+  )
+  assert response.status_code == 400
+
+
+async def test_delete_character_image(client):
+  character = await _create_character(client)
+  with patch("src.api.characters.service.upload_image_1_1", return_value=(IMAGE_URL, "characters/serge")):
+    await client.post(
+      "/api/characters/upload-image",
+      data={"id": str(character["id"])},
+      files={"file": ("serge.png", _image_bytes(), "image/png")},
+    )
+  with patch("src.api.characters.service.cloudinary_delete") as mock_delete:
+    response = await client.delete(f"/api/characters/{character['id']}/image")
+  assert response.status_code == 200
+  assert response.json()["image_url"] is None
+  mock_delete.assert_called_once_with("characters/serge")
+
+
+async def test_delete_character_image_not_found(client):
+  response = await client.delete("/api/characters/9999/image")
   assert response.status_code == 404
