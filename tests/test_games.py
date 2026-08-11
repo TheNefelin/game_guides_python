@@ -136,6 +136,52 @@ async def test_update_game_duplicate_name(client):
   assert response.status_code == 400
 
 
+async def test_create_game_duplicate_slug(client):
+  await _create_game(client)
+  response = await client.post("/api/games/", json={"name": "Other Game", "slug": "test-game"})
+  assert response.status_code == 400
+  assert "already exists" in response.json()["detail"]
+
+
+async def test_update_game_duplicate_slug(client):
+  await _create_game(client)
+  created = await _create_game(client, name="Other", slug="other")
+  response = await client.put(f"/api/games/{created['id']}", json={"name": "Other", "slug": "test-game"})
+  assert response.status_code == 400
+  assert "already exists" in response.json()["detail"]
+
+
+async def test_create_game_invalid_platform_id(client):
+  response = await client.post("/api/games/", json={
+    "name": "Broken Game",
+    "slug": "broken-game",
+    "platform_ids": [9999],
+  })
+  assert response.status_code == 400
+  assert "Invalid references" in response.json()["detail"]
+
+
+async def test_create_game_invalid_genre_id(client):
+  response = await client.post("/api/games/", json={
+    "name": "Broken Game",
+    "slug": "broken-game",
+    "genre_ids": [9999],
+  })
+  assert response.status_code == 400
+  assert "Invalid references" in response.json()["detail"]
+
+
+async def test_update_game_invalid_platform_id(client):
+  created = await _create_game(client)
+  response = await client.put(f"/api/games/{created['id']}", json={
+    "name": "Test Game",
+    "slug": "test-game",
+    "platform_ids": [9999],
+  })
+  assert response.status_code == 400
+  assert "Invalid references" in response.json()["detail"]
+
+
 async def test_delete_game(client):
   created = await _create_game(client)
   response = await client.delete(f"/api/games/{created['id']}")

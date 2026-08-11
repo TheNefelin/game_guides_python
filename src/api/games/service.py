@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas import dtos
 from src.core.exceptions import AppError, DuplicateNameError, NotFoundError
 from src.core.cloudinary import upload_image_1_1 as cloudinary_upload, delete_image as cloudinary_delete, extract_public_id
+from src.api.platforms import repository as platforms_repository
+from src.api.genres import repository as genres_repository
 from . import repository
 
 
@@ -10,6 +12,18 @@ from . import repository
 async def ensure_game_exists(db: AsyncSession, game_id: int) -> None:
   if not await repository.exists_by_id(db, game_id):
     raise AppError(f"Game with id {game_id} does not exist")
+
+
+async def validate_game_links(db: AsyncSession, platform_ids: list[int], genre_ids: list[int]) -> None:
+  missing = []
+  for pid in platform_ids:
+    if not await platforms_repository.exists_by_id(db, pid):
+      missing.append(f"platform {pid}")
+  for gid in genre_ids:
+    if not await genres_repository.exists_by_id(db, gid):
+      missing.append(f"genre {gid}")
+  if missing:
+    raise AppError(f"Invalid references: {', '.join(missing)}")
 
 
 # GET ALL --------------------------------------------------------
@@ -55,6 +69,9 @@ async def get_detail_by_slug(db: AsyncSession, slug: str) -> dtos.GameDetailResp
 async def create(db: AsyncSession, data: dtos.GameRequest) -> dtos.GameResponse:
   if await repository.exists_by_name(db, data.name):
     raise DuplicateNameError(data.name)
+  if await repository.exists_by_slug(db, data.slug):
+    raise DuplicateNameError(f"slug '{data.slug}' already exists")
+  await validate_game_links(db, data.platform_ids, data.genre_ids)
 
   entity = await repository.create(db, data.model_dump())
   return dtos.GameResponse.model_validate(entity)
@@ -69,6 +86,9 @@ async def update(db: AsyncSession, id: int, data: dtos.GameRequest) -> dtos.Game
 
   if data.name != current_entity.name and await repository.exists_by_name(db, data.name):
     raise DuplicateNameError(data.name)
+  if data.slug != current_entity.slug and await repository.exists_by_slug(db, data.slug):
+    raise DuplicateNameError(f"slug '{data.slug}' already exists")
+  await validate_game_links(db, data.platform_ids, data.genre_ids)
 
   entity = await repository.update(db, current_entity, data.model_dump())
   return dtos.GameResponse.model_validate(entity)

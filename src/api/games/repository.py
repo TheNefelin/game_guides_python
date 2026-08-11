@@ -40,6 +40,13 @@ async def exists_by_name(db: AsyncSession, name: str) -> bool:
   return result.scalar_one()
 
 
+# EXISTS BY SLUG --------------------------------------------------
+async def exists_by_slug(db: AsyncSession, slug: str) -> bool:
+  stmt = select(exists().where(models.Game.slug == slug))
+  result = await db.execute(stmt)
+  return result.scalar_one()
+
+
 # EXISTS BY ID ----------------------------------------------------
 async def exists_by_id(db: AsyncSession, id: int) -> bool:
   result = await db.execute(select(exists().where(models.Game.id == id)))

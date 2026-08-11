@@ -38,6 +38,12 @@ async def exists_by_name(db: AsyncSession, name: str, exclude_id: int | None = N
   return result.scalar_one()
 
 
+# EXISTS BY ID -----------------------------------------------------
+async def exists_by_id(db: AsyncSession, id: int) -> bool:
+  result = await db.execute(select(exists().where(models.Genre.id == id)))
+  return result.scalar_one()
+
+
 # GET BY ID -------------------------------------------------------
 async def get_by_id(db: AsyncSession, id: int) -> models.Genre | None:
   result = await db.execute(select(models.Genre).where(models.Genre.id == id))
