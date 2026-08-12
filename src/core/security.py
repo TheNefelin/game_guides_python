@@ -6,7 +6,7 @@ from jose import jwt, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
-from src.api.users import repository as users_repository
+from src.api.users import service as users_service
 from src.core.config import settings
 from src.core.database import get_db
 from src.core.exceptions import ForbiddenError, UnauthorizedError
@@ -41,11 +41,6 @@ def verify_token(token: str) -> dict:
     raise UnauthorizedError()
 
 
-# LOAD USER ROLE (lee el rol real desde la BD) -----------------------
-async def _load_user_role(db, user_id: UUID) -> str | None:
-  return await users_repository.get_role_name_by_id(db, user_id)
-
-
 # GET CURRENT USER (dependency: user desde token + rol en BD) --------
 def get_current_user(required_roles: Optional[List[str]] = None):
   async def _get_user(
@@ -66,7 +61,7 @@ def get_current_user(required_roles: Optional[List[str]] = None):
     except (ValueError, KeyError, TypeError):
       raise UnauthorizedError()
 
-    role = await users_repository.get_role_name_by_id(db, user_id)
+    role = await users_service.get_role_name_by_id(db, user_id)
     if role is None:
       raise UnauthorizedError(message="User no longer exists")
 

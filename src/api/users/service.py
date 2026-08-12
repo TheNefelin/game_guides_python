@@ -20,6 +20,11 @@ async def get_by_id(db: AsyncSession, id: UUID) -> dtos.UserResponse:
   return dtos.UserResponse.model_validate(entity)
 
 
+# GET ROLE NAME BY ID (passthrough para security/deps) -------------
+async def get_role_name_by_id(db: AsyncSession, user_id: UUID) -> str | None:
+  return await repository.get_role_name_by_id(db, user_id)
+
+
 # GET OR CREATE USER (Auth) ---------------------------------------
 async def get_or_create_user(db: AsyncSession, email: str, google_id: str) -> dtos.UserResponse:
   # Identidad primaria por google_sub (estable e inmutable). El email puede
