@@ -8,3 +8,9 @@ from src.models import models
 async def get_by_id(db: AsyncSession, id: int) -> models.Role | None:
   result = await db.execute(select(models.Role).where(models.Role.id == id))
   return result.scalar_one_or_none()
+
+
+# GET BY NAME -----------------------------------------------------
+async def get_by_name(db: AsyncSession, name: str) -> models.Role | None:
+  result = await db.execute(select(models.Role).where(models.Role.name == name))
+  return result.scalar_one_or_none()

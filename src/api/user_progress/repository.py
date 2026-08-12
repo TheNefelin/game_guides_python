@@ -59,3 +59,9 @@ async def delete_adventures_by_game(db: AsyncSession, user_id: UUID, game_id: in
     .values(is_completed=False, completed_at=None, updated_at=datetime.now(timezone.utc))
   )
   await db.execute(stmt)
+
+
+async def delete_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> None:
+  await delete_guides_by_game(db, user_id, game_id)
+  await delete_adventures_by_game(db, user_id, game_id)
+  await db.commit()

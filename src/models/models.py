@@ -23,7 +23,7 @@ class User(Base):
   id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
   email: Mapped[str] = mapped_column(String(256), unique=True, nullable=False)
   google_sub: Mapped[str | None] = mapped_column(String(256), unique=True, nullable=True)
-  role_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_roles.id"), default=1)
+  role_id: Mapped[int] = mapped_column(Integer, ForeignKey("gg_roles.id"))
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   role: Mapped["Role"] = relationship(back_populates="users")

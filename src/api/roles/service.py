@@ -12,3 +12,13 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.RoleResponse | None:
     return None
 
   return dtos.RoleResponse.model_validate(entity)
+
+
+# GET BY NAME -----------------------------------------------------
+async def get_by_name(db: AsyncSession, name: str) -> dtos.RoleResponse | None:
+  entity = await repository.get_by_name(db, name)
+
+  if not entity:
+    return None
+
+  return dtos.RoleResponse.model_validate(entity)

@@ -15,6 +15,4 @@ async def get_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> dtos.Use
 
 
 async def delete_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> None:
-  await repository.delete_guides_by_game(db, user_id, game_id)
-  await repository.delete_adventures_by_game(db, user_id, game_id)
-  await db.commit()
+  await repository.delete_by_game(db, user_id, game_id)

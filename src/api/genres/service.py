@@ -24,6 +24,11 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.GenreResponse:
   return dtos.GenreResponse.model_validate(entity)
 
 
+# EXISTS BY ID -----------------------------------------------------
+async def exists_by_id(db: AsyncSession, id: int) -> bool:
+  return await repository.exists_by_id(db, id)
+
+
 # CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, data: dtos.GenreRequest) -> dtos.GenreResponse:
   if await repository.exists_by_name(db, data.name):

@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas import dtos
 from src.core.exceptions import AppError, DuplicateNameError, NotFoundError
 from src.core.cloudinary import upload_image_1_1 as cloudinary_upload, delete_image as cloudinary_delete, extract_public_id
-from src.api.platforms import repository as platforms_repository
-from src.api.genres import repository as genres_repository
+from src.api.platforms import service as platforms_service
+from src.api.genres import service as genres_service
 from . import repository
 
 
@@ -17,10 +17,10 @@ async def ensure_game_exists(db: AsyncSession, game_id: int) -> None:
 async def validate_game_links(db: AsyncSession, platform_ids: list[int], genre_ids: list[int]) -> None:
   missing = []
   for pid in platform_ids:
-    if not await platforms_repository.exists_by_id(db, pid):
+    if not await platforms_service.exists_by_id(db, pid):
       missing.append(f"platform {pid}")
   for gid in genre_ids:
-    if not await genres_repository.exists_by_id(db, gid):
+    if not await genres_service.exists_by_id(db, gid):
       missing.append(f"genre {gid}")
   if missing:
     raise AppError(f"Invalid references: {', '.join(missing)}")

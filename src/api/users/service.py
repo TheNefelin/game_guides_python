@@ -3,7 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import dtos
 from src.core.exceptions import NotFoundError
+from src.api.roles import service as roles_service
 from . import repository
+
+
+DEFAULT_ROLE_NAME = "user"
 
 
 # GET BY ID -------------------------------------------------------
@@ -26,7 +30,12 @@ async def get_or_create_user(db: AsyncSession, email: str, google_id: str) -> dt
     entity = await repository.get_by_email(db, email)
 
   if not entity:
-    entity = await repository.create(db, {"email": email, "role_id": 1, "google_sub": google_id})
+    role = await roles_service.get_by_name(db, DEFAULT_ROLE_NAME)
+
+    if not role:
+      raise NotFoundError("Role")
+
+    entity = await repository.create(db, {"email": email, "role_id": role.id, "google_sub": google_id})
   elif entity.google_sub != google_id or entity.email != email:
     # Sync de identidad: backfill de google_sub (usuario pre-existente) o
     # email actualizado (el usuario lo cambió en Google).

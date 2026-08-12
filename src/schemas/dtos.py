@@ -62,14 +62,14 @@ class GenreResponse(AppModel):
 class GameRequest(BaseModel):
   name: str = Field(min_length=1, max_length=100)
   slug: str = Field(min_length=1, max_length=100)
-  description: str | None = None
-  cover_url: str | None = None
-  release_year: int | None = None
+  description: str | None = Field(default=None, max_length=2000)
+  cover_url: str | None = Field(default=None, max_length=1024)
+  release_year: int | None = Field(default=None, ge=1900, le=2100)
   rating: int | None = Field(default=None, ge=1, le=10)
   is_enabled: bool = True
   sort_order: int = 0
-  platform_ids: list[int] = []
-  genre_ids: list[int] = []
+  platform_ids: list[int] = Field(default_factory=list)
+  genre_ids: list[int] = Field(default_factory=list)
 
 
 class GameResponse(AppModel):
@@ -98,11 +98,11 @@ class GameDetailResponse(GameResponse):
 
 # CHARACTERS -------------------------------------------------------
 class CharacterRequest(BaseModel):
-  game_id: int
+  game_id: int = Field(ge=1)
   name: str = Field(min_length=1, max_length=100)
   slug: str = Field(min_length=1, max_length=100)
-  description: str | None = None
-  image_url: str | None = None
+  description: str | None = Field(default=None, max_length=2000)
+  image_url: str | None = Field(default=None, max_length=1024)
   is_playable: bool = True
   sort_order: int = 0
 
@@ -122,7 +122,7 @@ class CharacterResponse(AppModel):
 
 # SOURCES ----------------------------------------------------------
 class SourceRequest(BaseModel):
-  game_id: int
+  game_id: int = Field(ge=1)
   name: str = Field(min_length=1, max_length=200)
   url: str = Field(min_length=1, max_length=1000)
   sort_order: int = 0
@@ -160,9 +160,9 @@ class MapResponse(AppModel):
 
 # GUIDES -----------------------------------------------------------
 class GuideRequest(BaseModel):
-  game_id: int
+  game_id: int = Field(ge=1)
   title: str = Field(min_length=1, max_length=256)
-  summary: str | None = None
+  summary: str | None = Field(default=None, max_length=1024)
   sort_order: int = 0
   is_enabled: bool = True
 
@@ -183,8 +183,8 @@ class GuideDetailResponse(GuideResponse):
 
 # ADVENTURES --------------------------------------------------------
 class AdventureRequest(BaseModel):
-  guide_id: int
-  description: str = Field(min_length=1)
+  guide_id: int = Field(ge=1)
+  description: str = Field(min_length=1, max_length=5000)
   is_important: bool = False
   is_optional: bool = False
   sort_order: int = 0
