@@ -2,4 +2,20 @@ from fastapi import Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+from src.core.security import verify_token
+
+
+def rate_limit_key(request: Request) -> str:
+  auth_header = request.headers.get("authorization", "")
+  if auth_header.lower().startswith("bearer "):
+    try:
+      payload = verify_token(auth_header.split(" ")[1])
+      user_id = payload.get("sub")
+      if user_id:
+        return f"user:{user_id}"
+    except Exception:
+      pass
+  return get_remote_address(request)
+
+
+limiter = Limiter(key_func=rate_limit_key, default_limits=["100/minute"])
