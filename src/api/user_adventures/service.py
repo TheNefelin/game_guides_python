@@ -6,6 +6,7 @@ from src.core.exceptions import NotFoundError
 from . import repository
 
 
+# CREATE (marca adventure completado) -------------------------------
 async def create(db: AsyncSession, user_id: UUID, adventure_id: int) -> dtos.UserAdventureResponse:
   if not await repository.adventure_exists(db, adventure_id):
     raise NotFoundError("Adventure")
@@ -13,6 +14,7 @@ async def create(db: AsyncSession, user_id: UUID, adventure_id: int) -> dtos.Use
   return dtos.UserAdventureResponse.model_validate(entity)
 
 
+# DELETE (desmarca adventure) ---------------------------------------
 async def delete(db: AsyncSession, user_id: UUID, adventure_id: int) -> None:
   entity = await repository.get_by_id(db, user_id, adventure_id)
   if not entity:

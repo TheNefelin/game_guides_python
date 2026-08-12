@@ -3,6 +3,7 @@ from sqlalchemy.orm import declarative_base
 
 from src.core.config import settings
 
+# SESSION FACTORY + BASE ---------------------------------------------
 engine = create_async_engine(
   settings.DATABASE_URL,
   echo=settings.DEBUG,
@@ -12,6 +13,8 @@ engine = create_async_engine(
 AsyncSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 Base = declarative_base()
 
+
+# GET DB (dependency: provee una sesión por request) ------------------
 async def get_db():
   async with AsyncSessionLocal() as session:
     yield session

@@ -8,6 +8,7 @@ GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 
+# FETCH USERINFO (fallback si tokeninfo omite name/picture) ----------
 async def _fetch_userinfo(client: httpx.AsyncClient, access_token: str) -> dict:
   response = await client.get(
     GOOGLE_USERINFO_URL,
@@ -16,6 +17,7 @@ async def _fetch_userinfo(client: httpx.AsyncClient, access_token: str) -> dict:
   return response.json() if response.status_code == 200 else {}
 
 
+# VERIFY TOKEN (valida aud + email en Google) -------------------------
 async def verify_google_token(access_token: str) -> schemas.GoogleUserInfo:
   # Validar el token contra Google y verificar que fue emitido para ESTA
   # aplicación (aud == GOOGLE_CLIENT_ID). Sin este check, cualquier access

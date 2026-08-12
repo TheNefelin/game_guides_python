@@ -12,6 +12,7 @@ from . import schemas, google_service, session_repository
 REFRESH_TOKEN_DAYS = 7
 
 
+# LOGIN CON GOOGLE -------------------------------------------------
 async def auth_service(db: AsyncSession, google_token: str) -> schemas.AuthGoogleResponse:
   google_user_info = await google_service.verify_google_token(google_token)
 
@@ -44,6 +45,7 @@ async def auth_service(db: AsyncSession, google_token: str) -> schemas.AuthGoogl
   )
 
 
+# REFRESH SESSION --------------------------------------------------
 async def refresh_session(db: AsyncSession, refresh_token: str) -> schemas.AuthRefreshResponse:
   session = await session_repository.get_by_token(db, refresh_token)
 
@@ -66,6 +68,7 @@ async def refresh_session(db: AsyncSession, refresh_token: str) -> schemas.AuthR
   return schemas.AuthRefreshResponse(token=token, refresh_token=new_refresh)
 
 
+# LOGOUT (revoca refresh token) ------------------------------------
 async def revoke_session(db: AsyncSession, refresh_token: str) -> None:
   session = await session_repository.get_by_token(db, refresh_token)
 

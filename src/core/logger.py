@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 _request_id: ContextVar[str] = ContextVar("request_id", default="")
 
 
+# REQUEST ID (contextvar para correlacionar logs por request) ---------
 def set_request_id(request_id: str) -> None:
   _request_id.set(request_id)
 
@@ -15,6 +16,7 @@ def get_request_id() -> str:
   return _request_id.get()
 
 
+# JSON FORMATTER (logs estructurados) ---------------------------------
 class JsonFormatter(logging.Formatter):
   def format(self, record: logging.LogRecord) -> str:
     log_entry = {
@@ -29,6 +31,7 @@ class JsonFormatter(logging.Formatter):
     return json.dumps(log_entry, ensure_ascii=False)
 
 
+# SETUP LOGGER (a stdout en JSON) -------------------------------------
 def setup_logger() -> logging.Logger:
   _logger = logging.getLogger("game_guides")
   _logger.setLevel(logging.INFO)

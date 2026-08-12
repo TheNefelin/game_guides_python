@@ -5,6 +5,7 @@ from src.schemas import dtos
 from . import repository
 
 
+# GET BY GAME ------------------------------------------------------
 async def get_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> dtos.UserProgressResponse:
   guides = await repository.get_guides_by_game(db, user_id, game_id)
   adventures = await repository.get_adventures_by_game(db, user_id, game_id)
@@ -14,5 +15,6 @@ async def get_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> dtos.Use
   )
 
 
+# DELETE BY GAME (resetea progreso del juego) -----------------------
 async def delete_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> None:
   await repository.delete_by_game(db, user_id, game_id)

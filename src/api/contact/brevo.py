@@ -59,6 +59,7 @@ TEXT = "#eceaf3"
 TEXT_MUTED = "#a49fc0"
 
 
+# TEMPLATE (contenedor HTML del correo) ------------------------------
 def _email_template(body: str) -> str:
   return f"""<!DOCTYPE html>
 <html lang="es">
@@ -91,6 +92,7 @@ def _email_template(body: str) -> str:
 </html>"""
 
 
+# INFO BLOCK (fila label+valor del correo) ----------------------------
 def _info_block(label: str, value: str, last: bool = False) -> str:
   bottom = "border-bottom:1px solid " + BORDER if not last else ""
   return f"""
@@ -99,6 +101,7 @@ def _info_block(label: str, value: str, last: bool = False) -> str:
   """
 
 
+# SEND EMAIL (POST a la API REST de Brevo) ---------------------------
 async def _send_email(to_email: str, to_name: str, subject: str, html: str, reply_to: tuple[str, str] | None = None) -> None:
   payload = {
     "sender": {"email": settings.BREVO_FROM_EMAIL, "name": settings.BREVO_FROM_NAME},
@@ -130,6 +133,7 @@ async def _send_email(to_email: str, to_name: str, subject: str, html: str, repl
   _raise_brevo_error(response.status_code)
 
 
+# RAISE BREVO ERROR (mapea status HTTP a AppError) --------------------
 def _raise_brevo_error(status: int) -> None:
   if status in (401, 403):
     raise AppError(message="Brevo configuration error (invalid API key)", status_code=500)
@@ -138,6 +142,7 @@ def _raise_brevo_error(status: int) -> None:
   raise AppError(message="Could not send contact email", status_code=502)
 
 
+# SEND CONTACT EMAIL (correo al sitio, replyTo = remitente) ----------
 async def send_contact_email(reply_to_email: str, reply_to_name: str, reason: str, message: str) -> None:
   name = html.escape(reply_to_name)
   email = html.escape(reply_to_email)
@@ -163,6 +168,7 @@ async def send_contact_email(reply_to_email: str, reply_to_name: str, reason: st
   )
 
 
+# SEND CONFIRMATION EMAIL (acuse al remitente) ------------------------
 async def send_confirmation_email(user_email: str, user_name: str) -> None:
   name = html.escape(user_name)
 

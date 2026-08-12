@@ -8,6 +8,7 @@ from src.models import models
 from src.models.models import UserSession
 
 
+# CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, user_id: uuid.UUID, refresh_token: str, expires_at: datetime) -> UserSession:
   session = UserSession(user_id=user_id, refresh_token=refresh_token, expires_at=expires_at)
   db.add(session)
@@ -16,6 +17,7 @@ async def create(db: AsyncSession, user_id: uuid.UUID, refresh_token: str, expir
   return session
 
 
+# GET BY TOKEN (carga usuario y rol) -------------------------------
 async def get_by_token(db: AsyncSession, token: str) -> UserSession | None:
   result = await db.execute(
     select(UserSession)
@@ -25,6 +27,7 @@ async def get_by_token(db: AsyncSession, token: str) -> UserSession | None:
   return result.scalar_one_or_none()
 
 
+# REVOKE -----------------------------------------------------------
 async def revoke(db: AsyncSession, session: UserSession) -> None:
   session.is_revoked = True
   await db.commit()

@@ -7,6 +7,7 @@ from src.api.games import service as games_service
 from . import repository
 
 
+# GET ALL --------------------------------------------------------
 async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int | None = None, search: str | None = None) -> dtos.PaginationResponse[dtos.CharacterResponse]:
   total = await repository.count(db, game_id, search)
   entities = await repository.get_all(db, page, limit, game_id, search)
@@ -14,6 +15,7 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, game_id: int
   return dtos.PaginationResponse(page=page, limit=limit, total=total, items=items)
 
 
+# GET BY ID -------------------------------------------------------
 async def get_by_id(db: AsyncSession, id: int) -> dtos.CharacterResponse:
   entity = await repository.get_by_id(db, id)
   if not entity:
@@ -21,6 +23,7 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.CharacterResponse:
   return dtos.CharacterResponse.model_validate(entity)
 
 
+# CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, data: dtos.CharacterRequest) -> dtos.CharacterResponse:
   await games_service.ensure_game_exists(db, data.game_id)
   if await repository.exists_by_name(db, data.name, data.game_id):
@@ -31,6 +34,7 @@ async def create(db: AsyncSession, data: dtos.CharacterRequest) -> dtos.Characte
   return dtos.CharacterResponse.model_validate(entity)
 
 
+# UPDATE ----------------------------------------------------------
 async def update(db: AsyncSession, id: int, data: dtos.CharacterRequest) -> dtos.CharacterResponse:
   current = await repository.get_by_id(db, id)
   if not current:
@@ -44,6 +48,7 @@ async def update(db: AsyncSession, id: int, data: dtos.CharacterRequest) -> dtos
   return dtos.CharacterResponse.model_validate(entity)
 
 
+# DELETE ----------------------------------------------------------
 async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
   if not entity:
@@ -55,6 +60,7 @@ async def delete(db: AsyncSession, id: int) -> None:
   await repository.delete(db, entity)
 
 
+# UPLOAD IMAGE ---------------------------------------------------
 async def upload_image(db: AsyncSession, id: int, file_bytes: bytes) -> dtos.CharacterResponse:
   entity = await repository.get_by_id(db, id)
   if not entity:
@@ -71,6 +77,7 @@ async def upload_image(db: AsyncSession, id: int, file_bytes: bytes) -> dtos.Cha
   return dtos.CharacterResponse.model_validate(updated)
 
 
+# DELETE IMAGE ----------------------------------------------------
 async def delete_image(db: AsyncSession, id: int) -> dtos.CharacterResponse:
   entity = await repository.get_by_id(db, id)
   if not entity:

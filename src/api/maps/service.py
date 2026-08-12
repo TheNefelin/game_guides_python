@@ -7,6 +7,7 @@ from src.api.games import service as games_service
 from . import repository
 
 
+# CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, game_id: int, file_bytes: bytes, alt_text: str | None = None, sort_order: int = 0) -> dtos.MapResponse:
   await games_service.ensure_game_exists(db, game_id)
   image_url, _ = upload_image_free(file_bytes, folder="maps")
@@ -14,6 +15,7 @@ async def create(db: AsyncSession, game_id: int, file_bytes: bytes, alt_text: st
   return dtos.MapResponse.model_validate(entity)
 
 
+# DELETE ----------------------------------------------------------
 async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
   if not entity:

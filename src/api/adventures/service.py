@@ -13,6 +13,7 @@ async def ensure_adventure_exists(db: AsyncSession, adventure_id: int) -> None:
     raise AppError(f"Adventure with id {adventure_id} does not exist")
 
 
+# GET ALL --------------------------------------------------------
 async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, guide_id: int | None = None, search: str | None = None) -> dtos.PaginationResponse[dtos.AdventureResponse]:
   total = await repository.count(db, guide_id, search)
   entities = await repository.get_all(db, page, limit, guide_id, search)
@@ -20,6 +21,7 @@ async def get_all(db: AsyncSession, page: int = 1, limit: int = 20, guide_id: in
   return dtos.PaginationResponse(page=page, limit=limit, total=total, items=items)
 
 
+# GET BY ID -------------------------------------------------------
 async def get_by_id(db: AsyncSession, id: int) -> dtos.AdventureResponse:
   entity = await repository.get_by_id(db, id)
   if not entity:
@@ -27,12 +29,14 @@ async def get_by_id(db: AsyncSession, id: int) -> dtos.AdventureResponse:
   return dtos.AdventureResponse.model_validate(entity)
 
 
+# CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, data: dtos.AdventureRequest) -> dtos.AdventureResponse:
   await guides_service.ensure_guide_exists(db, data.guide_id)
   entity = await repository.create(db, data.model_dump())
   return dtos.AdventureResponse.model_validate(entity)
 
 
+# UPDATE ----------------------------------------------------------
 async def update(db: AsyncSession, id: int, data: dtos.AdventureRequest) -> dtos.AdventureResponse:
   current = await repository.get_by_id(db, id)
   if not current:
@@ -42,6 +46,7 @@ async def update(db: AsyncSession, id: int, data: dtos.AdventureRequest) -> dtos
   return dtos.AdventureResponse.model_validate(entity)
 
 
+# DELETE ----------------------------------------------------------
 async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id_with_images(db, id)
   if not entity:

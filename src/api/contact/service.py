@@ -6,6 +6,7 @@ from src.api.users import service as users_service
 from . import brevo, schemas
 
 
+# SEND CONTACT (envía correos vía Brevo) ----------------------------
 async def send_contact(db: AsyncSession, user_id: UUID, data: schemas.ContactRequest) -> schemas.ContactResponse:
   user = await users_service.get_by_id(db, user_id)
 

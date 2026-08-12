@@ -17,6 +17,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 2
 oauth2_scheme = HTTPBearer(auto_error=False)
 
 
+# CREATE ACCESS TOKEN (JWT firmado HS256) ----------------------------
 def create_access_token(user_id: UUID, role: str) -> str:
   now = datetime.now(tz=timezone.utc)
   expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -31,6 +32,7 @@ def create_access_token(user_id: UUID, role: str) -> str:
   return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
+# VERIFY TOKEN (decodifica y valida firma/exp) -----------------------
 def verify_token(token: str) -> dict:
   try:
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -39,10 +41,12 @@ def verify_token(token: str) -> dict:
     raise UnauthorizedError()
 
 
+# LOAD USER ROLE (lee el rol real desde la BD) -----------------------
 async def _load_user_role(db, user_id: UUID) -> str | None:
   return await users_repository.get_role_name_by_id(db, user_id)
 
 
+# GET CURRENT USER (dependency: user desde token + rol en BD) --------
 def get_current_user(required_roles: Optional[List[str]] = None):
   async def _get_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(oauth2_scheme),

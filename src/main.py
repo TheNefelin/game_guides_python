@@ -35,6 +35,8 @@ start_time = time.time()
 app = FastAPI(title="Game Guides API", description="In development", version="1.0")
 app.state.limiter = limiter
 
+
+# LOGGING MIDDLEWARE (request_id + duración por request) ---------------
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
   request_id = str(uuid.uuid4())
@@ -52,6 +54,7 @@ async def log_requests(request: Request, call_next):
   })
   return response
 
+# PROBLEM HANDLERS (respuestas RFC 9457) ------------------------------
 class RequestValidationProblem(UnprocessableProblem):
   type_ = "request-validation-failed"
   title = "Request validation error."
@@ -75,6 +78,7 @@ class RateLimitProblem(BadRequestProblem):
   status = 429
 
 
+# RATE LIMIT HANDLER (mapea RateLimitExceeded) -------------------------
 def rate_limit_handler(eh, request: Request, exc: RateLimitExceeded):
   headers = None
   if hasattr(request.state, "view_rate_limit"):
@@ -85,6 +89,7 @@ def rate_limit_handler(eh, request: Request, exc: RateLimitExceeded):
   return RateLimitProblem(detail=f"Rate limit exceeded: {exc.detail}", headers=headers)
 
 
+# LOG PROBLEM (warn en problemas < 500) --------------------------------
 def log_problem(request: Request, exc: Exception):
   if isinstance(exc, Problem) and exc.status < 500:
     logger.warning("%s: %s", exc.title, exc.detail, extra={
@@ -104,6 +109,7 @@ eh = new_exception_handler(
 add_exception_handler(app, eh)
 app.add_exception_handler(RateLimitExceeded, eh)
 
+# MIDDLEWARES ---------------------------------------------------------
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
   CORSMiddleware,
@@ -113,11 +119,15 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
+
+# STATIC FILES --------------------------------------------------------
 BASE_DIR = os.getcwd()  # raíz del proyecto
 STATIC_PATH = os.path.join(BASE_DIR, "static") 
 
 app.mount("/static", StaticFiles(directory=STATIC_PATH), name="static")
 
+
+# HEALTH / FAVICON ----------------------------------------------------
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
   return FileResponse(os.path.join(STATIC_PATH, "favicon.ico"))
@@ -131,6 +141,8 @@ async def health():
     "uptime_seconds": round(time.time() - start_time, 2),
   }
 
+
+# ROUTERS -------------------------------------------------------------
 app.include_router(auth_router, prefix="/api")
 app.include_router(platforms_router, prefix="/api")
 app.include_router(genres_router, prefix="/api")

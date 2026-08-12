@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import models
 
 
+# GET BY ID -------------------------------------------------------
 async def get_by_id(db: AsyncSession, user_id: UUID, adventure_id: int) -> models.UserAdventure | None:
   stmt = (
     select(models.UserAdventure)
@@ -15,12 +16,14 @@ async def get_by_id(db: AsyncSession, user_id: UUID, adventure_id: int) -> model
   return result.scalar_one_or_none()
 
 
+# EXISTS ----------------------------------------------------------
 async def adventure_exists(db: AsyncSession, adventure_id: int) -> bool:
   stmt = select(exists().where(models.Adventure.id == adventure_id))
   result = await db.execute(stmt)
   return result.scalar_one()
 
 
+# UPSERT (marca completado o crea) ---------------------------------
 async def upsert(db: AsyncSession, user_id: UUID, adventure_id: int) -> models.UserAdventure:
   item = await get_by_id(db, user_id, adventure_id)
   now = datetime.now(timezone.utc)
@@ -40,6 +43,7 @@ async def upsert(db: AsyncSession, user_id: UUID, adventure_id: int) -> models.U
   return item
 
 
+# UNCHECK (desmarca completado) ------------------------------------
 async def uncheck(db: AsyncSession, item: models.UserAdventure) -> models.UserAdventure:
   item.is_completed = False
   item.completed_at = None

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import models
 
 
+# GET GUIDES BY GAME ------------------------------------------------
 async def get_guides_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> list[models.UserGuide]:
   stmt = (
     select(models.UserGuide)
@@ -17,6 +18,7 @@ async def get_guides_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> l
   return list(result.scalars().all())
 
 
+# GET ADVENTURES BY GAME ---------------------------------------------
 async def get_adventures_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> list[models.UserAdventure]:
   stmt = (
     select(models.UserAdventure)
@@ -29,6 +31,7 @@ async def get_adventures_by_game(db: AsyncSession, user_id: UUID, game_id: int) 
   return list(result.scalars().all())
 
 
+# DELETE GUIDES BY GAME (helper reseteo) ------------------------------
 async def delete_guides_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> None:
   guide_ids = (
     select(models.Guide.id).where(models.Guide.game_id == game_id)
@@ -44,6 +47,7 @@ async def delete_guides_by_game(db: AsyncSession, user_id: UUID, game_id: int) -
   await db.execute(stmt)
 
 
+# DELETE ADVENTURES BY GAME (helper reseteo) --------------------------
 async def delete_adventures_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> None:
   adventure_ids = (
     select(models.Adventure.id)
@@ -61,6 +65,7 @@ async def delete_adventures_by_game(db: AsyncSession, user_id: UUID, game_id: in
   await db.execute(stmt)
 
 
+# DELETE BY GAME (borrado atómico de progreso del juego) -------------
 async def delete_by_game(db: AsyncSession, user_id: UUID, game_id: int) -> None:
   await delete_guides_by_game(db, user_id, game_id)
   await delete_adventures_by_game(db, user_id, game_id)

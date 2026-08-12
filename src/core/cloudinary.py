@@ -11,6 +11,7 @@ cloudinary.config(
   secure=True,
 )
 
+# UPLOAD 16:9 (1280x720 recortado) ------------------------------------
 def upload_image_16_9(file_bytes: bytes, folder: str, public_id: str = None) -> tuple[str, str]:
   result = cloudinary.uploader.upload(
     file_bytes,
@@ -29,6 +30,7 @@ def upload_image_16_9(file_bytes: bytes, folder: str, public_id: str = None) -> 
   return result["secure_url"], result["public_id"]
 
 
+# UPLOAD 1:1 (512x512 recortado) --------------------------------------
 def upload_image_1_1(file_bytes: bytes, folder: str, public_id: str = None) -> tuple[str, str]:
   result = cloudinary.uploader.upload(
     file_bytes,
@@ -47,6 +49,7 @@ def upload_image_1_1(file_bytes: bytes, folder: str, public_id: str = None) -> t
   return result["secure_url"], result["public_id"]
 
 
+# UPLOAD LIBRE (proporción original) ----------------------------------
 def upload_image_free(file_bytes: bytes, folder: str, public_id: str = None) -> tuple[str, str]:
   result = cloudinary.uploader.upload(
     file_bytes,
@@ -58,6 +61,7 @@ def upload_image_free(file_bytes: bytes, folder: str, public_id: str = None) -> 
   return result["secure_url"], result["public_id"]
 
 
+# DELETE IMAGE (con reintentos) ---------------------------------------
 def delete_image(public_id: str, retries: int = 2) -> bool:
   for attempt in range(retries):
     try:
@@ -77,6 +81,7 @@ def delete_image(public_id: str, retries: int = 2) -> bool:
   return False
 
 
+# EXTRACT PUBLIC ID (del URL, saltando transformaciones) --------------
 def extract_public_id(url: str) -> str | None:
   if not url:
     return None

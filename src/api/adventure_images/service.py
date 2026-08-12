@@ -7,6 +7,7 @@ from src.api.adventures import service as adventures_service
 from . import repository
 
 
+# CREATE ----------------------------------------------------------
 async def create(db: AsyncSession, adventure_id: int, file_bytes: bytes, alt_text: str | None = None, sort_order: int = 0) -> dtos.AdventureImageResponse:
   await adventures_service.ensure_adventure_exists(db, adventure_id)
   image_url, _ = upload_image_16_9(file_bytes, folder="adventures")
@@ -14,6 +15,7 @@ async def create(db: AsyncSession, adventure_id: int, file_bytes: bytes, alt_tex
   return dtos.AdventureImageResponse.model_validate(entity)
 
 
+# DELETE ----------------------------------------------------------
 async def delete(db: AsyncSession, id: int) -> None:
   entity = await repository.get_by_id(db, id)
   if not entity:

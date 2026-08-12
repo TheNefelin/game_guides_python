@@ -11,6 +11,7 @@ ALLOWED_FORMATS = {"JPEG", "PNG", "GIF", "WEBP"}
 CHUNK_SIZE = 1024 * 1024  # 1 MB por lectura
 
 
+# MAGIC BYTES CHECK (detección barata por firma) ----------------------
 def _looks_like_image(data: bytes) -> bool:
   if data.startswith(b"\xff\xd8\xff"):  # JPEG
     return True
